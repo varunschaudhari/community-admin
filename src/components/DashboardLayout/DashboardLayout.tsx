@@ -70,11 +70,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage
               {BRAND.NAME}
             </span>
           </div>
-          {!sidebarCollapsed && (
-            <button className="theme-toggle" onClick={toggleTheme}>
-              {isDark ? <SunOutlined /> : <MoonOutlined />}
-            </button>
-          )}
         </div>
 
         <nav className="nav-menu">
