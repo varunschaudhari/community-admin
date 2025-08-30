@@ -6,6 +6,7 @@ export const NAVIGATION = {
   TEAM: 'Team',
   DOCUMENTS: 'Documents',
   SETTINGS: 'Settings',
+  USERS: 'Users',
 } as const;
 
 // Header and UI Elements

@@ -34,6 +34,24 @@ class UserService {
   }
 
   /**
+   * Create a new user
+   */
+  async createUser(userData: { firstName: string; lastName: string; email: string; password: string }): Promise<{ success: boolean; data: User }> {
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/users`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(userData),
+      });
+
+      return await this.handleResponse<{ success: boolean; data: User }>(response);
+    } catch (error) {
+      console.error('Create user error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get all users (admin only)
    */
   async getAllUsers(): Promise<{ success: boolean; data: User[] }> {

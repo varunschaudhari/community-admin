@@ -5,6 +5,7 @@ import LoginPage from './components/LoginPage';
 import DashboardLayout from './components/DashboardLayout';
 import Dashboard from './components/Dashboard';
 import Settings from './components/Settings';
+import User from './components/User';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -16,6 +17,8 @@ const AppContent: React.FC = () => {
         return <Dashboard />;
       case 'settings':
         return <Settings />;
+      case 'user':
+        return <User />;
       default:
         return <Dashboard />;
     }
@@ -47,7 +50,7 @@ const AppContent: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <DashboardLayout>
+      <DashboardLayout currentPage={currentPage} onPageChange={setCurrentPage}>
         {renderContent()}
       </DashboardLayout>
     </ThemeProvider>

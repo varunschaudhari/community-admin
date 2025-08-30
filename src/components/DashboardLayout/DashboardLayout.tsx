@@ -17,14 +17,17 @@ import {
   TeamOutlined,
   BarChartOutlined,
   FileTextOutlined,
+  UsergroupAddOutlined,
 } from '@ant-design/icons';
 import './DashboardLayout.css';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  currentPage?: string;
+  onPageChange?: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage = 'dashboard', onPageChange }) => {
   const { theme, isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -42,13 +45,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     setSidebarOpen(false);
   };
 
+  const handleLogout = () => {
+    logout();
+  };
+
   const navigationItems = [
-    { key: 'dashboard', label: NAVIGATION.DASHBOARD, icon: <DashboardOutlined />, active: true },
-    { key: 'analytics', label: NAVIGATION.ANALYTICS, icon: <BarChartOutlined /> },
-    { key: 'messages', label: NAVIGATION.MESSAGES, icon: <MessageOutlined /> },
-    { key: 'team', label: NAVIGATION.TEAM, icon: <TeamOutlined /> },
-    { key: 'documents', label: NAVIGATION.DOCUMENTS, icon: <FileTextOutlined /> },
-    { key: 'settings', label: NAVIGATION.SETTINGS, icon: <SettingOutlined /> },
+    { key: 'dashboard', label: NAVIGATION.DASHBOARD, icon: <DashboardOutlined />, active: currentPage === 'dashboard' },
+    { key: 'analytics', label: NAVIGATION.ANALYTICS, icon: <BarChartOutlined />, active: currentPage === 'analytics' },
+    { key: 'messages', label: NAVIGATION.MESSAGES, icon: <MessageOutlined />, active: currentPage === 'messages' },
+    { key: 'team', label: NAVIGATION.TEAM, icon: <TeamOutlined />, active: currentPage === 'team' },
+    { key: 'documents', label: NAVIGATION.DOCUMENTS, icon: <FileTextOutlined />, active: currentPage === 'documents' },
+    { key: 'user', label: NAVIGATION.USERS, icon: <UsergroupAddOutlined />, active: currentPage === 'user' },
+    { key: 'settings', label: NAVIGATION.SETTINGS, icon: <SettingOutlined />, active: currentPage === 'settings' },
   ];
 
   return (
@@ -71,14 +79,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
         <nav className="nav-menu">
           {navigationItems.map((item) => (
-            <a
+            <button
               key={item.key}
-              href={`#${item.key}`}
+              onClick={() => onPageChange?.(item.key)}
               className={`nav-item ${item.active ? 'active' : ''} ${sidebarCollapsed ? 'collapsed' : ''}`}
             >
               <span className="nav-icon">{item.icon}</span>
               <span className="nav-text">{item.label}</span>
-            </a>
+            </button>
           ))}
         </nav>
       </div>
@@ -123,15 +131,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </button>
             </div>
 
-                         <div className="user-menu">
-               <div className="user-avatar">
-                 {(user?.firstName?.charAt(0) || '') + (user?.lastName?.charAt(0) || '') || 'U'}
-               </div>
-               <div className="user-info">
-                 <div className="user-name">{user?.firstName ? `${user.firstName} ${user.lastName || ''}` : HEADER.USER}</div>
-                 <div className="user-role">{user?.role || 'User'}</div>
-               </div>
-             </div>
+            <div className="user-menu-container">
+              <div className="user-menu">
+                <div className="user-avatar">
+                  {(user?.firstName?.charAt(0) || '') + (user?.lastName?.charAt(0) || '') || 'U'}
+                </div>
+                <div className="user-info">
+                  <div className="user-name">{user?.firstName ? `${user.firstName} ${user.lastName || ''}` : HEADER.USER}</div>
+                  <div className="user-role">{user?.role || 'User'}</div>
+                </div>
+              </div>
+            </div>
+
+            <button className="header-logout-button" onClick={handleLogout} title={HEADER.LOGOUT}>
+              <LogoutOutlined />
+            </button>
           </div>
         </header>
 
