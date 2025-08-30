@@ -8,6 +8,13 @@ export interface Theme {
     error: string;
     background: string;
     surface: string;
+    sidebar: {
+      background: string;
+      header: string;
+      text: string;
+      textActive: string;
+      border: string;
+    };
     text: {
       primary: string;
       secondary: string;
@@ -70,6 +77,13 @@ export const lightTheme: Theme = {
     error: '#ef4444',
     background: '#f8fafc',
     surface: '#ffffff',
+    sidebar: {
+      background: '#ffffff',
+      header: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      text: '#64748b',
+      textActive: '#667eea',
+      border: '#e2e8f0',
+    },
     text: {
       primary: '#1e293b',
       secondary: '#64748b',
@@ -132,6 +146,13 @@ export const darkTheme: Theme = {
     error: '#ef4444',
     background: '#0f172a',
     surface: '#1e293b',
+    sidebar: {
+      background: '#1e293b',
+      header: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      text: '#cbd5e1',
+      textActive: '#667eea',
+      border: '#334155',
+    },
     text: {
       primary: '#f8fafc',
       secondary: '#cbd5e1',

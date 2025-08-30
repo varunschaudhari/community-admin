@@ -27,12 +27,13 @@ const LayoutContainer = styled.div`
 
 const Sidebar = styled.div<{ $collapsed: boolean }>`
   width: ${({ $collapsed }) => ($collapsed ? '80px' : '280px')};
-  background: ${({ theme }) => theme.colors.gradient.primary};
+  background: ${({ theme }) => theme.colors.sidebar.background};
+  border-right: 1px solid ${({ theme }) => theme.colors.sidebar.border};
   transition: width 0.3s ease;
   position: fixed;
   height: 100vh;
   z-index: 1000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: ${({ theme }) => theme.colors.shadow};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
     transform: translateX(${({ $collapsed }) => ($collapsed ? '-100%' : '0')});
@@ -42,11 +43,12 @@ const Sidebar = styled.div<{ $collapsed: boolean }>`
 
 const SidebarHeader = styled.div<{ $collapsed: boolean }>`
   padding: ${({ theme }) => theme.spacing.lg};
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid ${({ theme }) => theme.colors.sidebar.border};
   display: flex;
   align-items: center;
   justify-content: ${({ $collapsed }) =>
     $collapsed ? 'center' : 'space-between'};
+  background: ${({ theme }) => theme.colors.sidebar.header};
 `;
 
 const Logo = styled.div<{ $collapsed: boolean }>`
@@ -93,18 +95,18 @@ const NavItem = styled.a<{ $active?: boolean; $collapsed?: boolean }>`
   gap: ${({ theme }) => theme.spacing.md};
   padding: ${({ theme }) => theme.spacing.md};
   color: ${({ theme, $active }) =>
-    $active ? 'white' : 'rgba(255, 255, 255, 0.8)'};
+    $active ? theme.colors.sidebar.textActive : theme.colors.sidebar.text};
   text-decoration: none;
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  background: ${({ $active }) =>
-    $active ? 'rgba(255, 255, 255, 0.2)' : 'transparent'};
+  background: ${({ $active, theme }) =>
+    $active ? `${theme.colors.primary}15` : 'transparent'};
   transition: all 0.3s ease;
   margin-bottom: ${({ theme }) => theme.spacing.xs};
   font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    background: ${({ theme }) => `${theme.colors.primary}10`};
+    color: ${({ theme }) => theme.colors.sidebar.textActive};
   }
 
   .nav-text {
