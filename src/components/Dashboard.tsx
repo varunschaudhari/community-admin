@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useTheme } from '../contexts/ThemeContext';
+import { DASHBOARD, ANALYTICS, MESSAGES, ACTIONS, TIME } from '../constants';
 import {
   UserOutlined,
   BarChartOutlined,
@@ -348,7 +349,7 @@ const Dashboard: React.FC = () => {
       color: theme.colors.success,
     },
     {
-      title: 'Messages',
+      title: MESSAGES.INBOX,
       value: '1,234',
       change: '-2.1%',
       positive: false,
@@ -356,7 +357,7 @@ const Dashboard: React.FC = () => {
       color: theme.colors.warning,
     },
     {
-      title: 'Analytics',
+      title: ANALYTICS.PAGE_VIEWS,
       value: '89.2%',
       change: '+5.7%',
       positive: true,
@@ -436,9 +437,9 @@ const Dashboard: React.FC = () => {
   return (
     <DashboardContainer>
       <WelcomeSection>
-        <WelcomeTitle>Welcome back, John! 👋</WelcomeTitle>
+        <WelcomeTitle>{DASHBOARD.WELCOME_MESSAGE}, John! 👋</WelcomeTitle>
         <WelcomeSubtitle>
-          Here's what's happening with your Bright Web Dashboard today.
+          {DASHBOARD.DASHBOARD_SUBTITLE}
         </WelcomeSubtitle>
       </WelcomeSection>
 
@@ -476,7 +477,7 @@ const Dashboard: React.FC = () => {
         {/* Messages Section */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Messages</CardTitle>
+            <CardTitle>Recent {MESSAGES.INBOX}</CardTitle>
           </CardHeader>
           <CardBody>
             {messages.map((message) => (
@@ -529,7 +530,7 @@ const Dashboard: React.FC = () => {
                         {product.rating}
                       </ProductStat>
                     </ProductStats>
-                    <ProductButton>Learn More</ProductButton>
+                    <ProductButton>{ACTIONS.VIEW}</ProductButton>
                   </ProductContent>
                 </ProductCard>
               ))}
@@ -547,13 +548,13 @@ const Dashboard: React.FC = () => {
       }}>
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>{DASHBOARD.QUICK_ACTIONS}</CardTitle>
           </CardHeader>
           <CardBody>
             <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
               <ProductButton>Create New Project</ProductButton>
               <ProductButton style={{ background: theme.colors.surface, color: theme.colors.text.primary, border: `1px solid ${theme.colors.border}` }}>
-                View Reports
+                {ACTIONS.VIEW} Reports
               </ProductButton>
               <ProductButton style={{ background: theme.colors.surface, color: theme.colors.text.primary, border: `1px solid ${theme.colors.border}` }}>
                 Manage Users
@@ -564,7 +565,7 @@ const Dashboard: React.FC = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>{DASHBOARD.RECENT_ACTIVITY}</CardTitle>
           </CardHeader>
           <CardBody>
             <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
@@ -603,7 +604,7 @@ const Dashboard: React.FC = () => {
                     Team Meeting
                   </div>
                   <div style={{ fontSize: theme.typography.fontSize.xs, color: theme.colors.text.tertiary }}>
-                    Tomorrow, 10:00 AM
+                    {TIME.TODAY}, 10:00 AM
                   </div>
                 </div>
               </div>

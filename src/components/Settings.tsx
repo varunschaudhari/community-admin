@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useTheme } from '../contexts/ThemeContext';
+import { SETTINGS, FORMS, SUCCESS } from '../constants';
 import {
   SettingOutlined,
   UserOutlined,
@@ -313,13 +314,13 @@ const Settings: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsLoading(false);
     // Show success message
-    console.log('Settings saved successfully');
+    console.log(SUCCESS.SAVED);
   };
 
   return (
     <SettingsContainer>
       <SettingsHeader>
-        <SettingsTitle>Settings</SettingsTitle>
+        <SettingsTitle>{SETTINGS.GENERAL}</SettingsTitle>
         <SettingsSubtitle>
           Manage your account settings and preferences
         </SettingsSubtitle>
@@ -331,7 +332,7 @@ const Settings: React.FC = () => {
           <SectionIcon color={theme.colors.primary}>
             <UserOutlined />
           </SectionIcon>
-          <SectionTitle>Profile Information</SectionTitle>
+          <SectionTitle>{SETTINGS.PROFILE} Information</SectionTitle>
         </SectionHeader>
         <SectionBody>
           <div style={{
@@ -340,7 +341,7 @@ const Settings: React.FC = () => {
             gap: theme.spacing.lg
           }}>
             <FormGroup>
-              <FormLabel>First Name</FormLabel>
+              <FormLabel>{FORMS.FIRST_NAME}</FormLabel>
               <InputWrapper>
                 <InputIcon>
                   <UserOutlined />
@@ -350,13 +351,13 @@ const Settings: React.FC = () => {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  placeholder="Enter your first name"
+                  placeholder={`Enter your ${FORMS.FIRST_NAME.toLowerCase()}`}
                 />
               </InputWrapper>
             </FormGroup>
 
             <FormGroup>
-              <FormLabel>Last Name</FormLabel>
+              <FormLabel>{FORMS.LAST_NAME}</FormLabel>
               <InputWrapper>
                 <InputIcon>
                   <UserOutlined />
@@ -366,13 +367,13 @@ const Settings: React.FC = () => {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  placeholder="Enter your last name"
+                  placeholder={`Enter your ${FORMS.LAST_NAME.toLowerCase()}`}
                 />
               </InputWrapper>
             </FormGroup>
 
             <FormGroup>
-              <FormLabel>Email Address</FormLabel>
+              <FormLabel>{FORMS.EMAIL} Address</FormLabel>
               <InputWrapper>
                 <InputIcon>
                   <MailOutlined />
@@ -382,13 +383,13 @@ const Settings: React.FC = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Enter your email address"
+                  placeholder={`Enter your ${FORMS.EMAIL.toLowerCase()} address`}
                 />
               </InputWrapper>
             </FormGroup>
 
             <FormGroup>
-              <FormLabel>Phone Number</FormLabel>
+              <FormLabel>{FORMS.PHONE} Number</FormLabel>
               <InputWrapper>
                 <InputIcon>
                   <PhoneOutlined />
@@ -398,7 +399,7 @@ const Settings: React.FC = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  placeholder="Enter your phone number"
+                  placeholder={`Enter your ${FORMS.PHONE.toLowerCase()} number`}
                 />
               </InputWrapper>
             </FormGroup>
@@ -412,19 +413,19 @@ const Settings: React.FC = () => {
           <SectionIcon color={theme.colors.accent}>
             <GlobalOutlined />
           </SectionIcon>
-          <SectionTitle>Appearance</SectionTitle>
+          <SectionTitle>{SETTINGS.APPEARANCE}</SectionTitle>
         </SectionHeader>
         <SectionBody>
           <FormGroup>
-            <FormLabel>Theme</FormLabel>
+            <FormLabel>{SETTINGS.THEME}</FormLabel>
             <ThemeToggle onClick={toggleTheme}>
               <ThemeOption active={!isDark}>
                 <SunOutlined />
-                Light
+                {SETTINGS.LIGHT_MODE}
               </ThemeOption>
               <ThemeOption active={isDark}>
                 <MoonOutlined />
-                Dark
+                {SETTINGS.DARK_MODE}
               </ThemeOption>
             </ThemeToggle>
           </FormGroup>
@@ -437,12 +438,12 @@ const Settings: React.FC = () => {
           <SectionIcon color={theme.colors.warning}>
             <BellOutlined />
           </SectionIcon>
-          <SectionTitle>Notifications</SectionTitle>
+          <SectionTitle>{SETTINGS.NOTIFICATIONS}</SectionTitle>
         </SectionHeader>
         <SectionBody>
           <ToggleContainer>
             <ToggleLabel>
-              <ToggleTitle>Email Notifications</ToggleTitle>
+              <ToggleTitle>Email {SETTINGS.NOTIFICATIONS}</ToggleTitle>
               <ToggleDescription>
                 Receive notifications via email
               </ToggleDescription>
@@ -455,7 +456,7 @@ const Settings: React.FC = () => {
 
           <ToggleContainer>
             <ToggleLabel>
-              <ToggleTitle>Push Notifications</ToggleTitle>
+              <ToggleTitle>Push {SETTINGS.NOTIFICATIONS}</ToggleTitle>
               <ToggleDescription>
                 Receive push notifications in your browser
               </ToggleDescription>
@@ -487,7 +488,7 @@ const Settings: React.FC = () => {
           <SectionIcon color={theme.colors.error}>
             <SecurityScanOutlined />
           </SectionIcon>
-          <SectionTitle>Security</SectionTitle>
+          <SectionTitle>{SETTINGS.SECURITY}</SectionTitle>
         </SectionHeader>
         <SectionBody>
           <ToggleContainer>
@@ -517,7 +518,7 @@ const Settings: React.FC = () => {
           </ToggleContainer>
 
           <FormGroup>
-            <FormLabel>Current Password</FormLabel>
+            <FormLabel>Current {FORMS.PASSWORD}</FormLabel>
             <InputWrapper>
               <InputIcon>
                 <LockOutlined />
@@ -527,7 +528,7 @@ const Settings: React.FC = () => {
                 name="currentPassword"
                 value={formData.currentPassword}
                 onChange={handleInputChange}
-                placeholder="Enter your current password"
+                placeholder={`Enter your current ${FORMS.PASSWORD.toLowerCase()}`}
               />
               <PasswordToggle
                 onClick={() => setShowPassword(!showPassword)}
@@ -538,7 +539,7 @@ const Settings: React.FC = () => {
           </FormGroup>
 
           <FormGroup>
-            <FormLabel>New Password</FormLabel>
+            <FormLabel>New {FORMS.PASSWORD}</FormLabel>
             <InputWrapper>
               <InputIcon>
                 <LockOutlined />
@@ -548,7 +549,7 @@ const Settings: React.FC = () => {
                 name="newPassword"
                 value={formData.newPassword}
                 onChange={handleInputChange}
-                placeholder="Enter your new password"
+                placeholder={`Enter your new ${FORMS.PASSWORD.toLowerCase()}`}
               />
               <PasswordToggle
                 onClick={() => setShowNewPassword(!showNewPassword)}
@@ -559,7 +560,7 @@ const Settings: React.FC = () => {
           </FormGroup>
 
           <FormGroup>
-            <FormLabel>Confirm New Password</FormLabel>
+            <FormLabel>{FORMS.CONFIRM_PASSWORD}</FormLabel>
             <InputWrapper>
               <InputIcon>
                 <LockOutlined />
@@ -569,7 +570,7 @@ const Settings: React.FC = () => {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                placeholder="Confirm your new password"
+                placeholder={`Confirm your new ${FORMS.PASSWORD.toLowerCase()}`}
               />
             </InputWrapper>
           </FormGroup>
@@ -580,7 +581,7 @@ const Settings: React.FC = () => {
       <div style={{ textAlign: 'center', marginTop: theme.spacing.xl }}>
         <SaveButton onClick={handleSave} disabled={isLoading}>
           <SaveOutlined />
-          {isLoading ? 'Saving...' : 'Save Changes'}
+          {isLoading ? 'Saving...' : `${FORMS.SAVE} Changes`}
         </SaveButton>
       </div>
     </SettingsContainer>

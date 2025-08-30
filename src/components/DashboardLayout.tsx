@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { NAVIGATION, HEADER, BRAND } from '../constants';
 import {
   DashboardOutlined,
   MessageOutlined,
@@ -347,12 +348,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [activePage, setActivePage] = useState('dashboard');
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <DashboardOutlined /> },
-    { id: 'analytics', label: 'Analytics', icon: <BarChartOutlined /> },
-    { id: 'messages', label: 'Messages', icon: <MessageOutlined /> },
-    { id: 'team', label: 'Team', icon: <TeamOutlined /> },
-    { id: 'documents', label: 'Documents', icon: <FileTextOutlined /> },
-    { id: 'settings', label: 'Settings', icon: <SettingOutlined /> },
+    { id: 'dashboard', label: NAVIGATION.DASHBOARD, icon: <DashboardOutlined /> },
+    { id: 'analytics', label: NAVIGATION.ANALYTICS, icon: <BarChartOutlined /> },
+    { id: 'messages', label: NAVIGATION.MESSAGES, icon: <MessageOutlined /> },
+    { id: 'team', label: NAVIGATION.TEAM, icon: <TeamOutlined /> },
+    { id: 'documents', label: NAVIGATION.DOCUMENTS, icon: <FileTextOutlined /> },
+    { id: 'settings', label: NAVIGATION.SETTINGS, icon: <SettingOutlined /> },
   ];
 
   const toggleSidebar = () => {
@@ -369,8 +370,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       <Sidebar $collapsed={sidebarCollapsed}>
         <SidebarHeader $collapsed={sidebarCollapsed}>
           <Logo $collapsed={sidebarCollapsed}>
-            <LogoIcon>BW</LogoIcon>
-            <LogoText $collapsed={sidebarCollapsed}>Bright Web</LogoText>
+            <LogoIcon>{BRAND.SHORT_NAME}</LogoIcon>
+            <LogoText $collapsed={sidebarCollapsed}>{BRAND.NAME}</LogoText>
           </Logo>
         </SidebarHeader>
 
@@ -393,7 +394,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       <MainContent $sidebarCollapsed={sidebarCollapsed}>
         <Header>
           <HeaderLeft>
-            <MenuToggle onClick={toggleSidebar}>
+            <MenuToggle onClick={toggleSidebar} title={HEADER.MENU_TOGGLE}>
               {sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             </MenuToggle>
 
@@ -401,7 +402,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <SearchIcon>
                 <SearchOutlined />
               </SearchIcon>
-              <SearchInput placeholder="Search..." />
+              <SearchInput placeholder={HEADER.SEARCH_PLACEHOLDER} />
             </SearchBar>
           </HeaderLeft>
 
@@ -410,7 +411,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               {isDark ? <SunOutlined /> : <MoonOutlined />}
             </HeaderButton>
 
-            <HeaderButton>
+            <HeaderButton title={HEADER.NOTIFICATIONS}>
               <BellOutlined />
               <NotificationBadge>3</NotificationBadge>
             </HeaderButton>
@@ -421,9 +422,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </UserAvatar>
               <UserInfo>
                 <UserName>{user?.firstName || ''} {user?.lastName || ''}</UserName>
-                <UserRole>{user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User'}</UserRole>
+                <UserRole>{user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : HEADER.USER}</UserRole>
               </UserInfo>
-              <LogoutButton onClick={() => logout()}>
+              <LogoutButton onClick={() => logout()} title={HEADER.LOGOUT}>
                 <LogoutOutlined />
               </LogoutButton>
             </UserMenu>
