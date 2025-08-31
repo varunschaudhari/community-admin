@@ -29,8 +29,18 @@ export const BRAND = {
 export const ROLES = {
   ADMIN: 'Admin',
   USER: 'User',
+  MEMBER: 'Member',
   MODERATOR: 'Moderator',
-  EDITOR: 'Editor',
+  GUEST: 'Guest'
+} as const;
+
+// Marital Status Options
+export const MARITAL_STATUS = {
+  SINGLE: 'Single',
+  MARRIED: 'Married',
+  DIVORCED: 'Divorced',
+  WIDOWED: 'Widowed',
+  SEPARATED: 'Separated',
 } as const;
 
 // Dashboard Sections
@@ -113,10 +123,22 @@ export const FORMS = {
   PASSWORD: 'Password',
   CONFIRM_PASSWORD: 'Confirm Password',
   FIRST_NAME: 'First Name',
+  MIDDLE_NAME: 'Middle Name',
   LAST_NAME: 'Last Name',
   USERNAME: 'Username',
-  PHONE: 'Phone',
+  PHONE: 'Phone Number',
   ADDRESS: 'Address',
+  PAN: 'PAN',
+  ADHAR: 'Aadhaar',
+  MARITAL_STATUS: 'Marital Status',
+  DOB: 'Date of Birth',
+  ROLE: 'Member Role',
+  KUL: 'Kul',
+  GOTRA: 'Gotra',
+  FATHER_NAME: 'Father\'s Name',
+  MOTHER_NAME: 'Mother\'s Name',
+  CHILDREN_NAME: 'Children Name',
+  DATE_OF_MARRIAGE: 'Date of Marriage',
   SAVE: 'Save',
   CANCEL: 'Cancel',
   SUBMIT: 'Submit',
@@ -129,6 +151,8 @@ export const FORMS = {
   CONFIRM: 'Confirm',
   YES: 'Yes',
   NO: 'No',
+  CREATE_USER: 'Create New Member',
+  USER_CREATION_SUBTITLE: 'Add a new community member with complete family details',
 } as const;
 
 // Status and States
@@ -149,8 +173,13 @@ export const STATUS = {
 export const ERRORS = {
   REQUIRED_FIELD: 'This field is required',
   INVALID_EMAIL: 'Please enter a valid email address',
+  INVALID_PHONE: 'Please enter a valid phone number',
+  INVALID_PAN: 'Please enter a valid PAN number (10 characters)',
+  INVALID_ADHAR: 'Please enter a valid Aadhaar number (12 digits)',
   PASSWORD_TOO_SHORT: 'Password must be at least 8 characters long',
   PASSWORDS_DONT_MATCH: 'Passwords do not match',
+  INVALID_DATE: 'Please enter a valid date',
+  FUTURE_DATE_NOT_ALLOWED: 'Date cannot be in the future',
   NETWORK_ERROR: 'Network error. Please try again.',
   UNAUTHORIZED: 'You are not authorized to perform this action',
   NOT_FOUND: 'The requested resource was not found',

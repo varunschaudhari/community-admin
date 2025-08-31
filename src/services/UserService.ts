@@ -20,16 +20,16 @@ class UserService {
    */
   private async handleResponse<T>(response: Response): Promise<T> {
     const data = await response.json();
-    
+
     if (!response.ok) {
       if (response.status === 401) {
         authService.clearAuth();
         throw new Error('Session expired. Please login again.');
       }
-      
+
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
     }
-    
+
     return data;
   }
 
@@ -203,6 +203,47 @@ class UserService {
     } catch (error) {
       console.error('Get users by role error:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Create a new community member
+   */
+  async createMember(memberData: any): Promise<{ success: boolean; data: any }> {
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/community/members/create`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(memberData),
+      });
+
+      return await this.handleResponse<{ success: boolean; data: any }>(response);
+    } catch (error) {
+      console.error('Create member error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Search community members for autocomplete
+   */
+  async searchMembers(query: string, type: 'father' | 'mother' | 'children'): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/community/members/search?q=${encodeURIComponent(query)}&type=${type}`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      const result = await this.handleResponse<{ success: boolean; data: any[] }>(response);
+      return result.data || [];
+    } catch (error) {
+      console.error('Search members error:', error);
+      // Return mock data for development
+      return [
+        { id: '1', name: 'John Doe', type },
+        { id: '2', name: 'Jane Smith', type },
+        { id: '3', name: 'Mike Johnson', type },
+      ];
     }
   }
 }
