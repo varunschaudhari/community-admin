@@ -18,6 +18,7 @@ import {
   BarChartOutlined,
   FileTextOutlined,
   UsergroupAddOutlined,
+  SafetyCertificateOutlined,
 } from '@ant-design/icons';
 import './DashboardLayout.css';
 
@@ -56,6 +57,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage
     { key: 'team', label: NAVIGATION.TEAM, icon: <TeamOutlined />, active: currentPage === 'team' },
     { key: 'documents', label: NAVIGATION.DOCUMENTS, icon: <FileTextOutlined />, active: currentPage === 'documents' },
     { key: 'user', label: NAVIGATION.USERS, icon: <UsergroupAddOutlined />, active: currentPage === 'user' },
+    { key: 'user-management', label: 'User Management', icon: <UserOutlined />, active: currentPage === 'user-management' },
+    { key: 'roles', label: 'Roles', icon: <SafetyCertificateOutlined />, active: currentPage === 'roles' },
     { key: 'settings', label: NAVIGATION.SETTINGS, icon: <SettingOutlined />, active: currentPage === 'settings' },
   ];
 

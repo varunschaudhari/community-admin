@@ -6,6 +6,8 @@ import DashboardLayout from './components/DashboardLayout';
 import Dashboard from './components/Dashboard';
 import Settings from './components/Settings';
 import User from './components/User';
+import UserManagement from './components/UserManagement/UserManagement';
+import Roles from './components/Roles/Roles';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -19,6 +21,10 @@ const AppContent: React.FC = () => {
         return <Settings />;
       case 'user':
         return <User />;
+      case 'user-management':
+        return <UserManagement />;
+      case 'roles':
+        return <Roles />;
       default:
         return <Dashboard />;
     }

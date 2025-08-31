@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { FORMS, ERRORS, SUCCESS, ROLES, MARITAL_STATUS } from '../../constants';
+import { FORMS, ERRORS, SUCCESS, MARITAL_STATUS } from '../../constants';
 import { userService } from '../../services/UserService';
+import { roleService } from '../../services/RoleService';
 import {
   UserOutlined,
   MailOutlined,
@@ -89,8 +90,21 @@ interface AutocompleteOption {
   type: 'father' | 'mother' | 'children';
 }
 
+interface Role {
+  id: string;
+  name: string;
+  description: string;
+  permissions: string[];
+  isActive: boolean;
+  isSystem: boolean;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const User: React.FC = () => {
   const { theme } = useTheme();
+  const [roles, setRoles] = useState<Role[]>([]);
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     middleName: '',
@@ -110,6 +124,21 @@ const User: React.FC = () => {
     childrenName: '',
     dateOfMarriage: '',
   });
+
+  // Fetch roles from database
+  const fetchRoles = async () => {
+    try {
+      const response = await roleService.getAllRoles();
+      setRoles((response.data || []) as Role[]);
+    } catch (error) {
+      console.error('Fetch roles error:', error);
+    }
+  };
+
+  // Fetch roles on component mount
+  useEffect(() => {
+    fetchRoles();
+  }, []);
 
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [validationState, setValidationState] = useState<ValidationState>({
@@ -787,8 +816,8 @@ const User: React.FC = () => {
                   className={`form-select ${validationState.roles}`}
                 >
                   <option value="">Select role</option>
-                  {Object.values(ROLES).map(role => (
-                    <option key={role} value={role}>{role}</option>
+                  {roles.map(role => (
+                    <option key={role.id} value={role.name}>{role.name}</option>
                   ))}
                 </select>
                 <DownOutlined className="select-arrow" />
