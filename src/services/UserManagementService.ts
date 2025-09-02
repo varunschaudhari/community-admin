@@ -1,18 +1,33 @@
+import { authService } from './AuthService';
+
 interface User {
   _id: string;
   username: string;
   email: string;
   firstName: string;
+  middleName?: string;
   lastName: string;
-  role: string;
+  phone: string;
+  pan?: string;
+  adhar?: string;
+  maritalStatus: 'Single' | 'Married' | 'Divorced' | 'Widowed';
+  dateOfBirth: string;
+  dateOfMarriage?: string;
+  kul?: string;
+  gotra?: string;
+  fatherName?: string;
+  motherName?: string;
+  childrenName?: string;
+  role: 'Super Admin' | 'Admin' | 'Member' | 'Moderator' | 'Guest';
   roleId?: string;
-  roleName: string;
-  roleDescription: string;
-  permissions: string[];
   verified: boolean;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
   lastLogin?: string;
+  // Virtual fields
+  fullName?: string;
+  displayName?: string;
 }
 
 interface UserStats {
@@ -35,8 +50,6 @@ interface SearchParams {
   limit?: number;
   page?: number;
 }
-
-import { authService } from './AuthService';
 
 interface PaginationInfo {
   total: number;
@@ -85,7 +98,7 @@ class UserManagementService {
    */
   async getAllUsers(): Promise<ApiResponse<User[]>> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
@@ -102,7 +115,7 @@ class UserManagementService {
    */
   async getUserById(id: string): Promise<ApiResponse<User>> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/${id}`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/${id}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
@@ -127,7 +140,7 @@ class UserManagementService {
       if (params.limit) queryParams.append('limit', params.limit.toString());
       if (params.page) queryParams.append('page', params.page.toString());
 
-      const response = await fetch(`${this.API_BASE_URL}/users/search?${queryParams}`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/search?${queryParams}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
@@ -144,7 +157,7 @@ class UserManagementService {
    */
   async getUserStats(): Promise<ApiResponse<UserStats>> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/stats`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/stats/overview`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
@@ -161,7 +174,7 @@ class UserManagementService {
    */
   async updateUserRole(userId: string, roleId: string): Promise<ApiResponse<User>> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/${userId}/role`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/${userId}/role`, {
         method: 'PUT',
         headers: this.getAuthHeaders(),
         body: JSON.stringify({ roleId }),
@@ -179,7 +192,7 @@ class UserManagementService {
    */
   async toggleUserVerification(userId: string): Promise<ApiResponse<{ id: string; verified: boolean }>> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/${userId}/verification`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/${userId}/verification`, {
         method: 'PATCH',
         headers: this.getAuthHeaders(),
       });
@@ -196,7 +209,7 @@ class UserManagementService {
    */
   async deleteUser(userId: string): Promise<ApiResponse<null>> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/${userId}`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/${userId}`, {
         method: 'DELETE',
         headers: this.getAuthHeaders(),
       });

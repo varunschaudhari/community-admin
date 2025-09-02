@@ -33,23 +33,7 @@ class UserService {
     return data;
   }
 
-  /**
-   * Create a new user
-   */
-  async createUser(userData: { firstName: string; lastName: string; email: string; password: string }): Promise<{ success: boolean; data: User }> {
-    try {
-      const response = await fetch(`${this.API_BASE_URL}/users`, {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify(userData),
-      });
 
-      return await this.handleResponse<{ success: boolean; data: User }>(response);
-    } catch (error) {
-      console.error('Create user error:', error);
-      throw error;
-    }
-  }
 
   /**
    * Get all users (admin only)
@@ -73,7 +57,7 @@ class UserService {
    */
   async getUserById(userId: string): Promise<{ success: boolean; data: User }> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/${userId}`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/${userId}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
@@ -90,7 +74,7 @@ class UserService {
    */
   async updateUserProfile(userId: string, userData: Partial<User>): Promise<{ success: boolean; data: User }> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/${userId}`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/${userId}`, {
         method: 'PUT',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(userData),
@@ -108,7 +92,7 @@ class UserService {
    */
   async deleteUser(userId: string): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/${userId}`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/${userId}`, {
         method: 'DELETE',
         headers: this.getAuthHeaders(),
       });
@@ -125,7 +109,7 @@ class UserService {
    */
   async changeUserRole(userId: string, role: 'admin' | 'member'): Promise<{ success: boolean; data: User }> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/${userId}/role`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/${userId}/role`, {
         method: 'PATCH',
         headers: this.getAuthHeaders(),
         body: JSON.stringify({ role }),
@@ -143,7 +127,7 @@ class UserService {
    */
   async verifyUser(userId: string): Promise<{ success: boolean; data: User }> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/${userId}/verify`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/${userId}/verify`, {
         method: 'PATCH',
         headers: this.getAuthHeaders(),
       });
@@ -160,7 +144,7 @@ class UserService {
    */
   async getUserStats(): Promise<{ success: boolean; data: any }> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/stats`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/stats/overview`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
@@ -173,11 +157,11 @@ class UserService {
   }
 
   /**
-   * Search users
+   * Search users with filters
    */
-  async searchUsers(query: string): Promise<{ success: boolean; data: User[] }> {
+  async searchUsersWithFilters(query: string): Promise<{ success: boolean; data: User[] }> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/search?q=${encodeURIComponent(query)}`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/search?q=${encodeURIComponent(query)}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
@@ -194,7 +178,7 @@ class UserService {
    */
   async getUsersByRole(role: 'admin' | 'member'): Promise<{ success: boolean; data: User[] }> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/role/${role}`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users?role=${role}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
@@ -207,29 +191,29 @@ class UserService {
   }
 
   /**
-   * Create a new community member
+   * Create a new user
    */
-  async createMember(memberData: any): Promise<{ success: boolean; data: any }> {
+  async createUser(userData: any): Promise<{ success: boolean; data: any }> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/community/members/create`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/create`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
-        body: JSON.stringify(memberData),
+        body: JSON.stringify(userData),
       });
 
       return await this.handleResponse<{ success: boolean; data: any }>(response);
     } catch (error) {
-      console.error('Create member error:', error);
+      console.error('Create user error:', error);
       throw error;
     }
   }
 
   /**
-   * Search community members for autocomplete
+   * Search users for autocomplete
    */
-  async searchMembers(query: string, type: 'father' | 'mother' | 'children'): Promise<any[]> {
+  async searchUsers(query: string, type: 'father' | 'mother' | 'children'): Promise<any[]> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/community/members/search?q=${encodeURIComponent(query)}&type=${type}`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/search?q=${encodeURIComponent(query)}&type=${type}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
@@ -237,7 +221,7 @@ class UserService {
       const result = await this.handleResponse<{ success: boolean; data: any[] }>(response);
       return result.data || [];
     } catch (error) {
-      console.error('Search members error:', error);
+      console.error('Search users error:', error);
       // Return mock data for development
       return [
         { id: '1', name: 'John Doe', type },

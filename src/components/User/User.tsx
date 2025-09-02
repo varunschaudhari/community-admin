@@ -379,7 +379,7 @@ const User: React.FC = () => {
 
     try {
       // Simulate API call - replace with actual API endpoint
-      const response = await userService.searchMembers(query, field as 'father' | 'mother' | 'children');
+      const response = await userService.searchUsers(query, field as 'father' | 'mother' | 'children');
       setAutocompleteOptions(response);
       setShowAutocomplete(prev => ({ ...prev, [field]: true }));
     } catch (error) {
@@ -436,7 +436,7 @@ const User: React.FC = () => {
     setSubmitMessage(null);
 
     try {
-      await userService.createMember(formData);
+      await userService.createUser(formData);
       setSubmitMessage({ type: 'success', message: SUCCESS.CREATED });
       // Reset form after successful submission
       setFormData({

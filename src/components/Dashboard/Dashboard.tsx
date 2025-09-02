@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLocalStorageUser } from '../../hooks/useLocalStorageUser';
 import { DASHBOARD, ANALYTICS, MESSAGES, ACTIONS, TIME } from '../../constants';
 import {
   UserOutlined,
@@ -19,6 +20,8 @@ import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
   const { theme } = useTheme();
+  const { user, userName, isLoggedIn, isLoading } = useLocalStorageUser();
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   const stats = [
     {
@@ -288,6 +291,146 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Debug Section */}
+      <div className="card" style={{ marginTop: '20px', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' }}>
+        <div className="card-header">
+          <h3 className="card-title">🔧 LocalStorage Debug Info</h3>
+        </div>
+        <div className="card-body">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginBottom: '15px' }}>
+            <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #ddd' }}>
+              <strong>User Name:</strong> {userName}
+            </div>
+            <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #ddd' }}>
+              <strong>Logged In:</strong> {isLoggedIn ? '✅ Yes' : '❌ No'}
+            </div>
+            <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #ddd' }}>
+              <strong>Loading:</strong> {isLoading ? '⏳ Yes' : '✅ No'}
+            </div>
+            <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #ddd' }}>
+              <strong>User ID:</strong> {user?._id || 'None'}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => {
+                const userData = localStorage.getItem('user');
+                const token = localStorage.getItem('authToken');
+                console.log('🔍 Manual Debug:');
+                console.log('User Data:', userData);
+                console.log('Token:', token);
+                if (userData) {
+                  try {
+                    const parsed = JSON.parse(userData);
+                    console.log('Parsed User:', parsed);
+                  } catch (error) {
+                    console.error('Parse Error:', error);
+                  }
+                }
+                alert('Check console for debug info');
+              }}
+              style={{ padding: '8px 16px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              Debug Console
+            </button>
+
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined' && (window as any).debugLocalStorage) {
+                  (window as any).debugLocalStorage();
+                  alert('Check console for debug info');
+                } else {
+                  alert('Debug function not available');
+                }
+              }}
+              style={{ padding: '8px 16px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              Global Debug
+            </button>
+
+            <button
+              onClick={() => {
+                const userData = localStorage.getItem('user');
+                if (userData) {
+                  try {
+                    const parsed = JSON.parse(userData);
+                    alert(`User: ${parsed.firstName} ${parsed.lastName}\nUsername: ${parsed.username}\nEmail: ${parsed.email}`);
+                  } catch (error) {
+                    alert('Error parsing user data');
+                  }
+                } else {
+                  alert('No user data found in localStorage');
+                }
+              }}
+              style={{ padding: '8px 16px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              Show User Data
+            </button>
+
+            <button
+              onClick={() => {
+                localStorage.removeItem('user');
+                localStorage.removeItem('authToken');
+                window.location.reload();
+              }}
+              style={{ padding: '8px 16px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              Clear Storage
+            </button>
+
+            <button
+              onClick={async () => {
+                if (typeof window !== 'undefined' && (window as any).testBackend) {
+                  const isRunning = await (window as any).testBackend();
+                  alert(isRunning ? '✅ Backend is running!' : '❌ Backend is not running');
+                } else {
+                  alert('Backend test function not available');
+                }
+              }}
+              style={{ padding: '8px 16px', backgroundColor: '#6f42c1', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              Test Backend
+            </button>
+
+            <button
+              onClick={() => {
+                // Set test user data in localStorage
+                const testUser = {
+                  _id: 'test123',
+                  username: 'testuser',
+                  email: 'test@example.com',
+                  firstName: 'Test',
+                  lastName: 'User',
+                  role: 'admin',
+                  verified: true,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
+                };
+                const testToken = 'test-token-123';
+
+                localStorage.setItem('user', JSON.stringify(testUser));
+                localStorage.setItem('authToken', testToken);
+
+                alert('Test data set! Reload the page to see if it persists.');
+              }}
+              style={{ padding: '8px 16px', backgroundColor: '#fd7e14', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              Set Test Data
+            </button>
+          </div>
+
+          {user && (
+            <div style={{ marginTop: '15px', padding: '10px', backgroundColor: 'white', borderRadius: '4px', border: '1px solid #ddd' }}>
+              <strong>Raw User Data:</strong>
+              <pre style={{ fontSize: '12px', overflow: 'auto', margin: '5px 0 0 0' }}>
+                {JSON.stringify(user, null, 2)}
+              </pre>
+            </div>
+          )}
         </div>
       </div>
     </div>

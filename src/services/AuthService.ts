@@ -21,17 +21,17 @@ class AuthService {
    */
   private async handleResponse<T>(response: Response): Promise<T> {
     const data = await response.json();
-    
+
     if (!response.ok) {
       // Handle specific error cases
       if (response.status === 401) {
         this.clearAuth();
         throw new Error('Session expired. Please login again.');
       }
-      
+
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
     }
-    
+
     return data;
   }
 
@@ -49,12 +49,12 @@ class AuthService {
       });
 
       const result = await this.handleResponse<AuthResponse>(response);
-      
+
       if (result.success && result.data) {
         this.setToken(result.data.token);
         this.setUser(result.data.user);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Login error:', error);
@@ -76,12 +76,12 @@ class AuthService {
       });
 
       const result = await this.handleResponse<AuthResponse>(response);
-      
+
       if (result.success && result.data) {
         this.setToken(result.data.token);
         this.setUser(result.data.user);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Registration error:', error);
@@ -117,11 +117,11 @@ class AuthService {
       });
 
       const result = await this.handleResponse<{ success: boolean; data: User }>(response);
-      
+
       if (result.success) {
         this.setUser(result.data);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Token validation error:', error);
@@ -181,6 +181,8 @@ class AuthService {
    */
   setUser(user: User): void {
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('userDataUpdated'));
   }
 
   /**
@@ -189,6 +191,8 @@ class AuthService {
   clearAuth(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('userDataUpdated'));
   }
 
   /**
@@ -245,11 +249,11 @@ class AuthService {
       });
 
       const result = await this.handleResponse<{ success: boolean; data: User }>(response);
-      
+
       if (result.success) {
         this.setUser(result.data);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Update profile error:', error);

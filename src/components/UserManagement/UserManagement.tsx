@@ -36,6 +36,7 @@ import {
 } from '@ant-design/icons';
 import { userManagementService, User, UserStats } from '../../services/UserManagementService';
 import { roleService } from '../../services/RoleService';
+import UserDetail from './UserDetail';
 import './UserManagement.css';
 
 const { Search } = Input;
@@ -64,6 +65,7 @@ const UserManagement: React.FC = () => {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [viewModalVisible, setViewModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
+    const [showUserDetail, setShowUserDetail] = useState(false);
     const [pagination, setPagination] = useState({
         current: 1,
         pageSize: 10,
@@ -147,7 +149,7 @@ const UserManagement: React.FC = () => {
 
     const handleViewUser = (user: User) => {
         setSelectedUser(user);
-        setViewModalVisible(true);
+        setShowUserDetail(true);
     };
 
     const handleEditUser = (user: User) => {
@@ -189,6 +191,25 @@ const UserManagement: React.FC = () => {
             message.error('Failed to delete user');
             console.error('Delete user error:', error);
         }
+    };
+
+    const handleUserDetailBack = () => {
+        setShowUserDetail(false);
+        setSelectedUser(null);
+    };
+
+    const handleUserUpdated = () => {
+        fetchUsers();
+        fetchStats();
+        setShowUserDetail(false);
+        setSelectedUser(null);
+    };
+
+    const handleUserDeleted = () => {
+        fetchUsers();
+        fetchStats();
+        setShowUserDetail(false);
+        setSelectedUser(null);
     };
 
     const handleExportUsers = async () => {
@@ -249,8 +270,8 @@ const UserManagement: React.FC = () => {
             title: 'Role',
             key: 'role',
             render: (user: User) => (
-                <Tag color={getRoleColor(user.roleName)}>
-                    {user.roleName}
+                <Tag color={getRoleColor(user.role)}>
+                    {user.role}
                 </Tag>
             ),
             width: 120
@@ -280,7 +301,7 @@ const UserManagement: React.FC = () => {
             title: 'Actions',
             key: 'actions',
             render: (user: User) => (
-                <Space>
+                <Space onClick={(e) => e.stopPropagation()}>
                     <Tooltip title="View Details">
                         <Button
                             type="text"
@@ -314,7 +335,7 @@ const UserManagement: React.FC = () => {
                                 >
                                     {user.verified ? 'Unverify' : 'Verify'}
                                 </Menu.Item>
-                                {user.role !== 'admin' && (
+                                {user.role !== 'Super Admin' && user.role !== 'Admin' && (
                                     <Menu.Item
                                         key="delete"
                                         danger
@@ -334,6 +355,18 @@ const UserManagement: React.FC = () => {
             width: 120
         }
     ];
+
+    // Show UserDetail component if a user is selected
+    if (showUserDetail && selectedUser) {
+        return (
+            <UserDetail
+                user={selectedUser}
+                onBack={handleUserDetailBack}
+                onUserUpdated={handleUserUpdated}
+                onUserDeleted={handleUserDeleted}
+            />
+        );
+    }
 
     return (
         <div className="user-management-page">
@@ -479,105 +512,13 @@ const UserManagement: React.FC = () => {
                     }}
                     onChange={handleTableChange}
                     className="users-table"
+                    onRow={(record) => ({
+                        onClick: () => handleViewUser(record),
+                        style: { cursor: 'pointer' }
+                    })}
                 />
             </div>
 
-            {/* View User Modal */}
-            <Modal
-                title="User Details"
-                open={viewModalVisible}
-                onCancel={() => setViewModalVisible(false)}
-                footer={[
-                    <Button key="close" onClick={() => setViewModalVisible(false)}>
-                        Close
-                    </Button>
-                ]}
-                width={600}
-            >
-                {selectedUser && (
-                    <div className="user-details-modal">
-                        <div className="user-header">
-                            <Avatar size={64} icon={<UserOutlined />} />
-                            <div className="user-info">
-                                <h3>{selectedUser.firstName} {selectedUser.lastName}</h3>
-                                <p>@{selectedUser.username}</p>
-                                <p>{selectedUser.email}</p>
-                            </div>
-                        </div>
-                        <div className="user-details">
-                            <div className="detail-row">
-                                <span className="label">Role:</span>
-                                <Tag color={getRoleColor(selectedUser.roleName)}>
-                                    {selectedUser.roleName}
-                                </Tag>
-                            </div>
-                            <div className="detail-row">
-                                <span className="label">Status:</span>
-                                <Badge
-                                    status={selectedUser.verified ? 'success' : 'error'}
-                                    text={selectedUser.verified ? 'Verified' : 'Unverified'}
-                                />
-                            </div>
-                            <div className="detail-row">
-                                <span className="label">Joined:</span>
-                                <span>{new Date(selectedUser.createdAt).toLocaleDateString()}</span>
-                            </div>
-                            <div className="detail-row">
-                                <span className="label">Last Updated:</span>
-                                <span>{new Date(selectedUser.updatedAt).toLocaleDateString()}</span>
-                            </div>
-                            {selectedUser.lastLogin && (
-                                <div className="detail-row">
-                                    <span className="label">Last Login:</span>
-                                    <span>{new Date(selectedUser.lastLogin).toLocaleDateString()}</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </Modal>
-
-            {/* Edit User Modal */}
-            <Modal
-                title="Edit User"
-                open={editModalVisible}
-                onCancel={() => setEditModalVisible(false)}
-                footer={[
-                    <Button key="cancel" onClick={() => setEditModalVisible(false)}>
-                        Cancel
-                    </Button>,
-                    <Button key="save" type="primary">
-                        Save Changes
-                    </Button>
-                ]}
-                width={500}
-            >
-                {selectedUser && (
-                    <div className="edit-user-form">
-                        <div className="form-group">
-                            <label>Role</label>
-                            <Select
-                                value={selectedUser.roleId}
-                                style={{ width: '100%' }}
-                                onChange={(value) => handleUpdateUserRole(selectedUser._id, value)}
-                            >
-                                {roles.map(role => (
-                                    <Option key={role.id} value={role.id}>
-                                        {role.name}
-                                    </Option>
-                                ))}
-                            </Select>
-                        </div>
-                        <div className="form-group">
-                            <label>Verification Status</label>
-                            <Switch
-                                checked={selectedUser.verified}
-                                onChange={() => handleToggleVerification(selectedUser._id)}
-                            />
-                        </div>
-                    </div>
-                )}
-            </Modal>
         </div>
     );
 };

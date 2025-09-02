@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLocalStorageUser } from '../../hooks/useLocalStorageUser';
 import { NAVIGATION, HEADER, BRAND } from '../../constants';
 import {
   DashboardOutlined,
@@ -31,6 +32,7 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage = 'dashboard', onPageChange }) => {
   const { theme, isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const { userName, firstName, lastName, isLoggedIn } = useLocalStorageUser();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -132,11 +134,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage
             <div className="user-menu-container">
               <div className="user-menu">
                 <div className="user-avatar">
-                  {(user?.firstName?.charAt(0) || '') + (user?.lastName?.charAt(0) || '') || 'U'}
+                  {isLoggedIn ? (firstName?.charAt(0) || '') + (lastName?.charAt(0) || '') : 'U'}
                 </div>
                 <div className="user-info">
-                  <div className="user-name">{user?.firstName ? `${user.firstName} ${user.lastName || ''}` : HEADER.USER}</div>
-                  <div className="user-role">{user?.role || 'User'}</div>
+                  <div className="user-name">{isLoggedIn ? userName : HEADER.USER}</div>
                 </div>
               </div>
             </div>

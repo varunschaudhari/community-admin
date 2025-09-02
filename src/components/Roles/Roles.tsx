@@ -52,16 +52,16 @@ const Roles: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Calculate total statistics
-  const totalMembers = roles.reduce((sum, role) => sum + (role.memberCount || 0), 0);
-  const rolesWithMembers = roles.filter(role => (role.memberCount || 0) > 0).length;
-  const rolesWithoutMembers = roles.filter(role => (role.memberCount || 0) === 0).length;
+  const totalUsers = roles.reduce((sum, role) => sum + (role.memberCount || 0), 0);
+  const rolesWithUsers = roles.filter(role => (role.memberCount || 0) > 0).length;
+  const rolesWithoutUsers = roles.filter(role => (role.memberCount || 0) === 0).length;
 
   // Available permissions
   const availablePermissions: Permission[] = [
-    { id: 'members:read', name: 'View Members', description: 'Can view community members', resource: 'members' },
-    { id: 'members:create', name: 'Create Members', description: 'Can create new members', resource: 'members' },
-    { id: 'members:update', name: 'Update Members', description: 'Can edit member information', resource: 'members' },
-    { id: 'members:delete', name: 'Delete Members', description: 'Can remove members', resource: 'members' },
+    { id: 'users:read', name: 'View Users', description: 'Can view community users', resource: 'users' },
+    { id: 'users:create', name: 'Create Users', description: 'Can create new users', resource: 'users' },
+    { id: 'users:update', name: 'Update Users', description: 'Can edit user information', resource: 'users' },
+    { id: 'users:delete', name: 'Delete Users', description: 'Can remove users', resource: 'users' },
     { id: 'roles:read', name: 'View Roles', description: 'Can view role definitions', resource: 'roles' },
     { id: 'roles:create', name: 'Create Roles', description: 'Can create new roles', resource: 'roles' },
     { id: 'roles:update', name: 'Update Roles', description: 'Can edit role permissions', resource: 'roles' },
@@ -301,29 +301,16 @@ const Roles: React.FC = () => {
             <div className="stat-label">Total Roles</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">{totalMembers}</div>
-            <div className="stat-label">Total Members</div>
+            <div className="stat-number">{totalUsers}</div>
+            <div className="stat-label">Total Users</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">{rolesWithMembers}</div>
+            <div className="stat-number">{rolesWithUsers}</div>
             <div className="stat-label">Roles with Members</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">{rolesWithoutMembers}</div>
+            <div className="stat-number">{rolesWithoutUsers}</div>
             <div className="stat-label">Empty Roles</div>
-          </div>
-        </div>
-
-        {/* Role Member Breakdown */}
-        <div className="role-breakdown">
-          <h4>Member Distribution by Role</h4>
-          <div className="breakdown-grid">
-            {roles.map(role => (
-              <div key={role.id} className="breakdown-item">
-                <div className="breakdown-role">{role.name}</div>
-                <div className="breakdown-count">{role.memberCount || 0} members</div>
-              </div>
-            ))}
           </div>
         </div>
 

@@ -79,7 +79,7 @@ export const MESSAGES = {
 
 // Team Management
 export const TEAM = {
-  MEMBERS: 'Members',
+  USERS: 'Users',
   INVITE: 'Invite',
   ROLES: 'Roles',
   PERMISSIONS: 'Permissions',

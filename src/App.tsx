@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './components/LoginPage';
@@ -8,6 +8,63 @@ import Settings from './components/Settings';
 import User from './components/User';
 import UserManagement from './components/UserManagement/UserManagement';
 import Roles from './components/Roles/Roles';
+import { LocalStorageDebugButton } from './components/LocalStorageDebugger/LocalStorageDebugger';
+
+// Simple localStorage debug utilities
+const debugLocalStorage = () => {
+  const userData = localStorage.getItem('user');
+  const token = localStorage.getItem('authToken');
+
+  console.log('🔍 LocalStorage Debug:');
+  console.log('User Data:', userData);
+  console.log('Token:', token);
+
+  if (userData) {
+    try {
+      const parsed = JSON.parse(userData);
+      console.log('Parsed User:', parsed);
+      console.log('User Name:', parsed.firstName + ' ' + parsed.lastName);
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+    }
+  }
+
+  return { userData, token };
+};
+
+// Test backend connectivity
+const testBackend = async () => {
+  try {
+    const response = await fetch('http://localhost:5000/health');
+    const data = await response.json();
+    console.log('✅ Backend is running:', data);
+    return true;
+  } catch (error) {
+    console.error('❌ Backend is not running:', error);
+    return false;
+  }
+};
+
+// Make it available globally
+if (typeof window !== 'undefined') {
+  (window as any).debugLocalStorage = debugLocalStorage;
+  (window as any).testBackend = testBackend;
+  (window as any).getUserFromStorage = () => {
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
+  };
+  (window as any).getUserName = () => {
+    const user = (window as any).getUserFromStorage();
+    if (user && user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    } else if (user && user.firstName) {
+      return user.firstName;
+    } else if (user && user.username) {
+      return user.username;
+    }
+    return 'Unknown User';
+  };
+}
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -59,6 +116,7 @@ const AppContent: React.FC = () => {
       <DashboardLayout currentPage={currentPage} onPageChange={setCurrentPage}>
         {renderContent()}
       </DashboardLayout>
+      <LocalStorageDebugButton />
     </ThemeProvider>
   );
 };

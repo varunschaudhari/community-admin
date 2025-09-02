@@ -88,17 +88,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Check if user is authenticated
-        if (authService.isAuthenticated()) {
-          // Validate token with backend
-          const response = await authService.validateToken();
-          if (response.success) {
-            setUser(response.data);
+        // First, try to get user from localStorage
+        const storedUser = authService.getUser();
+        const hasToken = authService.isAuthenticated();
+
+        console.log('🔍 Auth Check - Stored User:', !!storedUser, 'Has Token:', hasToken);
+
+        if (storedUser && hasToken) {
+          // We have both user data and token, set the user immediately
+          setUser(storedUser);
+          console.log('✅ User loaded from localStorage:', storedUser.firstName, storedUser.lastName);
+
+          // Try to validate token in background (don't block the UI)
+          try {
+            const response = await authService.validateToken();
+            if (response.success) {
+              setUser(response.data);
+              console.log('✅ Token validated with backend');
+            }
+          } catch (validationError) {
+            // Token validation failed, but we keep the user logged in
+            console.warn('⚠️ Token validation failed, but keeping user logged in from localStorage');
           }
+        } else if (storedUser && !hasToken) {
+          // We have user data but no token - clear user data
+          console.warn('⚠️ User data found but no token - clearing storage');
+          authService.clearAuth();
+          setUser(null);
+        } else if (!storedUser && hasToken) {
+          // We have token but no user data - clear token
+          console.warn('⚠️ Token found but no user data - clearing storage');
+          authService.clearAuth();
+          setUser(null);
+        } else {
+          // No user data and no token
+          console.log('ℹ️ No authentication data found');
+          setUser(null);
         }
       } catch (err) {
-        // Token validation failed, clear storage
-        authService.clearAuth();
+        console.error('❌ Auth check error:', err);
+        // Don't clear storage on error, just set user to null
+        setUser(null);
       } finally {
         setIsLoading(false);
       }

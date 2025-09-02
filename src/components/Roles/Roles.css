@@ -101,50 +101,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Role Breakdown Section */
-.role-breakdown {
-  padding: var(--spacing-lg);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border-light);
-}
 
-.role-breakdown h4 {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-md) 0;
-}
-
-.breakdown-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.breakdown-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--color-background-secondary);
-  border-radius: var(--border-radius-sm);
-  border: 1px solid var(--color-border-light);
-}
-
-.breakdown-role {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
-}
-
-.breakdown-count {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
-  background: var(--color-primary-light);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-}
 
 .roles-table-container {
   padding: var(--spacing-lg);
