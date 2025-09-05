@@ -4,6 +4,7 @@ class AuthService {
   private readonly API_BASE_URL = 'http://localhost:5000/api';
   private readonly TOKEN_KEY = 'authToken';
   private readonly USER_KEY = 'user';
+  private readonly TOKEN_EXPIRY_KEY = 'tokenExpiry';
 
   /**
    * Get authentication headers for API requests
@@ -17,6 +18,30 @@ class AuthService {
   }
 
   /**
+   * Check if JWT token is expired
+   */
+  isTokenExpired(): boolean {
+    const expiry = localStorage.getItem(this.TOKEN_EXPIRY_KEY);
+    if (!expiry) return true;
+
+    const expiryTime = new Date(expiry).getTime();
+    const currentTime = new Date().getTime();
+
+    // Add 5 minute buffer before actual expiration
+    const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+    return currentTime >= (expiryTime - bufferTime);
+  }
+
+  /**
+   * Calculate token expiry time (24 hours from now)
+   */
+  private calculateTokenExpiry(): Date {
+    const now = new Date();
+    now.setHours(now.getHours() + 24); // 24 hours from now
+    return now;
+  }
+
+  /**
    * Handle API response and throw errors if needed
    */
   private async handleResponse<T>(response: Response): Promise<T> {
@@ -25,8 +50,12 @@ class AuthService {
     if (!response.ok) {
       // Handle specific error cases
       if (response.status === 401) {
-        this.clearAuth();
-        throw new Error('Session expired. Please login again.');
+        // Only clear auth if it's a real authentication error, not just expired token
+        if (this.isTokenExpired()) {
+          this.clearAuth();
+          throw new Error('Session expired. Please login again.');
+        }
+        throw new Error('Authentication failed. Please login again.');
       }
 
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
@@ -53,6 +82,9 @@ class AuthService {
       if (result.success && result.data) {
         this.setToken(result.data.token);
         this.setUser(result.data.user);
+        // Set token expiry time
+        const expiryTime = this.calculateTokenExpiry();
+        localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toISOString());
       }
 
       return result;
@@ -80,6 +112,9 @@ class AuthService {
       if (result.success && result.data) {
         this.setToken(result.data.token);
         this.setUser(result.data.user);
+        // Set token expiry time
+        const expiryTime = this.calculateTokenExpiry();
+        localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toISOString());
       }
 
       return result;
@@ -94,6 +129,12 @@ class AuthService {
    */
   async getProfile(): Promise<{ success: boolean; data: User }> {
     try {
+      // Check token expiration before making request
+      if (this.isTokenExpired()) {
+        this.clearAuth();
+        throw new Error('Session expired. Please login again.');
+      }
+
       const response = await fetch(`${this.API_BASE_URL}/auth/profile`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
@@ -111,6 +152,12 @@ class AuthService {
    */
   async validateToken(): Promise<{ success: boolean; data: User }> {
     try {
+      // Check token expiration before making request
+      if (this.isTokenExpired()) {
+        this.clearAuth();
+        throw new Error('Session expired. Please login again.');
+      }
+
       const response = await fetch(`${this.API_BASE_URL}/auth/validate`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
@@ -120,12 +167,15 @@ class AuthService {
 
       if (result.success) {
         this.setUser(result.data);
+        // Refresh token expiry time
+        const expiryTime = this.calculateTokenExpiry();
+        localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toISOString());
       }
 
       return result;
     } catch (error) {
       console.error('Token validation error:', error);
-      this.clearAuth();
+      // Don't clear auth here, let the calling code handle it
       throw error;
     }
   }
@@ -143,6 +193,7 @@ class AuthService {
     } catch (error) {
       console.error('Logout API error:', error);
     } finally {
+      // Always clear auth on logout
       this.clearAuth();
     }
   }
@@ -151,7 +202,9 @@ class AuthService {
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const hasToken = !!this.getToken();
+    const tokenNotExpired = !this.isTokenExpired();
+    return hasToken && tokenNotExpired;
   }
 
   /**
@@ -191,8 +244,29 @@ class AuthService {
   clearAuth(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem(this.TOKEN_EXPIRY_KEY);
     // Dispatch custom event to notify other components
     window.dispatchEvent(new CustomEvent('userDataUpdated'));
+  }
+
+  /**
+   * Get token expiry time
+   */
+  getTokenExpiry(): Date | null {
+    const expiry = localStorage.getItem(this.TOKEN_EXPIRY_KEY);
+    return expiry ? new Date(expiry) : null;
+  }
+
+  /**
+   * Get time until token expires in milliseconds
+   */
+  getTimeUntilExpiry(): number {
+    const expiry = this.getTokenExpiry();
+    if (!expiry) return 0;
+
+    const currentTime = new Date().getTime();
+    const expiryTime = expiry.getTime();
+    return Math.max(0, expiryTime - currentTime);
   }
 
   /**
@@ -200,6 +274,12 @@ class AuthService {
    */
   async refreshUserData(): Promise<User | null> {
     try {
+      // Check token expiration before making request
+      if (this.isTokenExpired()) {
+        this.clearAuth();
+        throw new Error('Session expired. Please login again.');
+      }
+
       const response = await this.getProfile();
       if (response.success) {
         this.setUser(response.data);

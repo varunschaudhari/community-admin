@@ -91,11 +91,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // First, try to get user from localStorage
         const storedUser = authService.getUser();
         const hasToken = authService.isAuthenticated();
+        const tokenExpiry = authService.getTokenExpiry();
+        const timeUntilExpiry = authService.getTimeUntilExpiry();
 
-        console.log('🔍 Auth Check - Stored User:', !!storedUser, 'Has Token:', hasToken);
+        console.log('🔍 Auth Check - Stored User:', !!storedUser, 'Has Valid Token:', hasToken);
+        if (tokenExpiry) {
+          console.log('⏰ Token expires at:', tokenExpiry.toLocaleString());
+          console.log('⏰ Time until expiry:', Math.round(timeUntilExpiry / 60000), 'minutes');
+        }
 
         if (storedUser && hasToken) {
-          // We have both user data and token, set the user immediately
+          // We have both user data and valid token, set the user immediately
           setUser(storedUser);
           console.log('✅ User loaded from localStorage:', storedUser.firstName, storedUser.lastName);
 
@@ -106,13 +112,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               setUser(response.data);
               console.log('✅ Token validated with backend');
             }
-          } catch (validationError) {
-            // Token validation failed, but we keep the user logged in
-            console.warn('⚠️ Token validation failed, but keeping user logged in from localStorage');
+          } catch (validationError: unknown) {
+            // Only clear storage if token is actually expired
+            const errorMessage = validationError instanceof Error ? validationError.message : String(validationError);
+            if (errorMessage.includes('Session expired')) {
+              console.warn('⚠️ Token expired - clearing storage');
+              authService.clearAuth();
+              setUser(null);
+            } else {
+              console.warn('⚠️ Token validation failed, but keeping user logged in from localStorage');
+            }
           }
         } else if (storedUser && !hasToken) {
-          // We have user data but no token - clear user data
-          console.warn('⚠️ User data found but no token - clearing storage');
+          // We have user data but no valid token - clear user data
+          console.warn('⚠️ User data found but no valid token - clearing storage');
           authService.clearAuth();
           setUser(null);
         } else if (!storedUser && hasToken) {
@@ -136,6 +149,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     checkAuth();
   }, []);
+
+  // Set up periodic token expiration check
+  useEffect(() => {
+    if (!user) return; // Only check if user is logged in
+
+    const checkTokenExpiry = () => {
+      if (authService.isTokenExpired()) {
+        console.log('⏰ Token expired - clearing authentication');
+        authService.clearAuth();
+        setUser(null);
+        setError('Session expired. Please login again.');
+      }
+    };
+
+    // Check every minute
+    const interval = setInterval(checkTokenExpiry, 60000);
+
+    // Also check when the token is about to expire
+    const timeUntilExpiry = authService.getTimeUntilExpiry();
+    if (timeUntilExpiry > 0) {
+      const timeout = setTimeout(() => {
+        checkTokenExpiry();
+      }, timeUntilExpiry);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
+    }
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   const value: AuthContextType = {
     user,

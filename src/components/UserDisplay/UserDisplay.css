@@ -108,6 +108,7 @@
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -138,21 +139,21 @@
     gap: 8px;
     padding: 6px;
   }
-  
+
   .user-avatar {
     width: 32px;
     height: 32px;
     font-size: 14px;
   }
-  
+
   .user-name {
     font-size: 14px;
   }
-  
+
   .user-details {
     gap: 2px;
   }
-  
+
   .user-email,
   .user-username {
     font-size: 11px;
@@ -164,25 +165,46 @@
   .user-display:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
-  
+
   .user-name,
   .user-first-name {
     color: #e9ecef;
   }
-  
+
   .user-email {
     color: #adb5bd;
   }
-  
+
   .user-display.not-logged-in {
     color: #adb5bd;
   }
-  
+
   .skeleton {
     background: linear-gradient(90deg, #2d3748 25%, #4a5568 50%, #2d3748 75%);
   }
-  
+
   .skeleton-text {
     background: linear-gradient(90deg, #2d3748 25%, #4a5568 50%, #2d3748 75%);
   }
+}
+
+.avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  /* Ensure perfect centering */
+  text-align: center;
+  vertical-align: middle;
+  /* Additional centering properties */
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0 auto;
 }

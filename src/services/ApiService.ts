@@ -18,11 +18,29 @@ export interface User {
     username: string;
     email: string;
     firstName: string;
+    middleName?: string;
     lastName: string;
-    role: 'admin' | 'moderator' | 'member';
+    phone?: string;
+    pan?: string;
+    adhar?: string;
+    maritalStatus?: string;
+    dateOfBirth?: string;
+    dateOfMarriage?: string;
+    kul?: string;
+    gotra?: string;
+    fatherName?: string;
+    motherName?: string;
+    childrenName?: string;
+    role: 'Super Admin' | 'Admin' | 'Member' | 'Moderator' | 'Guest' | 'admin';
+    roleId?: string;
     verified: boolean;
+    isActive?: boolean;
+    lastLogin?: string;
     createdAt: string;
     updatedAt: string;
+    fullName?: string;
+    displayName?: string;
+    id?: string;
 }
 
 export interface AuthResponse {

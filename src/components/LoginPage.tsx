@@ -259,19 +259,19 @@ const LoginPage: React.FC = () => {
 
         <Form onSubmit={handleSubmit}>
           <FormGroup>
-                                    <InputWrapper>
-                            <InputIcon>
-                                <UserOutlined />
-                            </InputIcon>
-                            <Input
-                                type="text"
-                                name="username"
-                                placeholder="Enter your username"
-                                value={formData.username}
-                                onChange={handleInputChange}
-                                required
-                            />
-                        </InputWrapper>
+            <InputWrapper>
+              <InputIcon>
+                <UserOutlined />
+              </InputIcon>
+              <Input
+                type="text"
+                name="username"
+                placeholder="Enter your username"
+                value={formData.username}
+                onChange={handleInputChange}
+                required
+              />
+            </InputWrapper>
           </FormGroup>
 
           <FormGroup>

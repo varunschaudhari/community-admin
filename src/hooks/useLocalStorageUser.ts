@@ -5,11 +5,29 @@ interface User {
     username: string;
     email: string;
     firstName: string;
+    middleName?: string;
     lastName: string;
-    role: 'admin' | 'moderator' | 'member';
+    phone?: string;
+    pan?: string;
+    adhar?: string;
+    maritalStatus?: string;
+    dateOfBirth?: string;
+    dateOfMarriage?: string;
+    kul?: string;
+    gotra?: string;
+    fatherName?: string;
+    motherName?: string;
+    childrenName?: string;
+    role: 'Super Admin' | 'Admin' | 'Member' | 'Moderator' | 'Guest' | 'admin';
+    roleId?: string;
     verified: boolean;
+    isActive?: boolean;
+    lastLogin?: string;
     createdAt: string;
     updatedAt: string;
+    fullName?: string;
+    displayName?: string;
+    id?: string;
 }
 
 interface UseLocalStorageUserReturn {
@@ -43,15 +61,26 @@ export const useLocalStorageUser = (): UseLocalStorageUserReturn => {
             console.log('  Token:', token);
 
             if (userData && token) {
-                const parsedUser = JSON.parse(userData);
-                console.log('  Parsed User:', parsedUser);
+                const parsedData = JSON.parse(userData);
+                console.log('  Parsed Data:', parsedData);
+
+                // Handle both direct user object and nested user object structure
+                let userObject = parsedData;
+
+                // If the data has a nested 'user' property, extract it
+                if (parsedData && typeof parsedData === 'object' && parsedData.user) {
+                    userObject = parsedData.user;
+                    console.log('  Extracted nested user object:', userObject);
+                }
 
                 // Basic validation to ensure we have a valid user object
-                if (parsedUser && typeof parsedUser === 'object' && parsedUser._id) {
-                    console.log('  ✅ Valid user found:', parsedUser.firstName, parsedUser.lastName);
-                    return parsedUser;
+                if (userObject && typeof userObject === 'object' && userObject._id) {
+                    console.log('  ✅ Valid user found:', userObject.firstName, userObject.lastName);
+                    return userObject;
                 } else {
-                    console.log('  ❌ Invalid user object');
+                    console.log('  ❌ Invalid user object structure');
+                    console.log('  Expected: object with _id property');
+                    console.log('  Got:', userObject);
                 }
             } else {
                 console.log('  ❌ Missing user data or token');
@@ -85,9 +114,16 @@ export const useLocalStorageUser = (): UseLocalStorageUserReturn => {
             if (e.key === 'user') {
                 if (e.newValue) {
                     try {
-                        const parsedUser = JSON.parse(e.newValue);
-                        if (parsedUser && typeof parsedUser === 'object' && parsedUser._id) {
-                            setUser(parsedUser);
+                        const parsedData = JSON.parse(e.newValue);
+                        let userObject = parsedData;
+
+                        // Handle nested user object structure
+                        if (parsedData && typeof parsedData === 'object' && parsedData.user) {
+                            userObject = parsedData.user;
+                        }
+
+                        if (userObject && typeof userObject === 'object' && userObject._id) {
+                            setUser(userObject);
                         } else {
                             setUser(null);
                         }

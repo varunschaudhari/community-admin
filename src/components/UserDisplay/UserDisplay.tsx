@@ -74,9 +74,10 @@ export const UserDisplay: React.FC<UserDisplayProps> = ({
                 <div
                     className="user-avatar"
                     style={{ backgroundColor: getAvatarColor() }}
-                    title={userName}
+                    title={`${userName} (${role})`}
+                    aria-label={`Avatar for ${userName}`}
                 >
-                    {getInitials()}
+                    <span className="avatar-initials">{getInitials()}</span>
                 </div>
             )}
 

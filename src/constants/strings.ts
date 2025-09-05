@@ -20,7 +20,7 @@ export const HEADER = {
 
 // Brand and Company
 export const BRAND = {
-  NAME: 'Teli Community',
+  NAME: 'Community',
   SHORT_NAME: 'TC',
   LOGO_ALT: 'Bright Web Logo',
 } as const;
