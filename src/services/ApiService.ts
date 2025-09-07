@@ -41,6 +41,12 @@ export interface User {
     fullName?: string;
     displayName?: string;
     id?: string;
+    // System user specific fields
+    userType?: 'system' | 'community';
+    department?: string;
+    employeeId?: string;
+    accessLevel?: number;
+    systemRole?: string;
 }
 
 export interface AuthResponse {

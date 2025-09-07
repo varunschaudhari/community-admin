@@ -22,14 +22,27 @@ class AuthService {
    */
   isTokenExpired(): boolean {
     const expiry = localStorage.getItem(this.TOKEN_EXPIRY_KEY);
-    if (!expiry) return true;
+    console.log('🔍 AuthService - isTokenExpired check:');
+    console.log('  Token expiry from localStorage:', expiry);
+    
+    if (!expiry) {
+      console.log('  ❌ No expiry found - token considered expired');
+      return true;
+    }
 
     const expiryTime = new Date(expiry).getTime();
     const currentTime = new Date().getTime();
 
     // Add 5 minute buffer before actual expiration
     const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
-    return currentTime >= (expiryTime - bufferTime);
+    const isExpired = currentTime >= (expiryTime - bufferTime);
+    
+    console.log('  Expiry time:', new Date(expiryTime).toLocaleString());
+    console.log('  Current time:', new Date(currentTime).toLocaleString());
+    console.log('  Time until expiry:', Math.round((expiryTime - currentTime) / 60000), 'minutes');
+    console.log('  Is expired:', isExpired);
+    
+    return isExpired;
   }
 
   /**
@@ -233,8 +246,10 @@ class AuthService {
    * Set user data in storage
    */
   setUser(user: User): void {
+    console.log('🔍 AuthService - setUser called with:', user);
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     // Dispatch custom event to notify other components
+    console.log('🔍 AuthService - Dispatching userDataUpdated event');
     window.dispatchEvent(new CustomEvent('userDataUpdated'));
   }
 
@@ -242,6 +257,8 @@ class AuthService {
    * Clear all authentication data
    */
   clearAuth(): void {
+    console.log('🔍 AuthService - clearAuth called - removing all auth data');
+    console.log('  Stack trace:', new Error().stack);
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     localStorage.removeItem(this.TOKEN_EXPIRY_KEY);

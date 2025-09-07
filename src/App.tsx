@@ -8,6 +8,7 @@ import Settings from './components/Settings';
 import User from './components/User';
 import UserManagement from './components/UserManagement/UserManagement';
 import Roles from './components/Roles/Roles';
+import SystemUserManagement from './components/SystemUserManagement/SystemUserManagement';
 import { LocalStorageDebugButton } from './components/LocalStorageDebugger/LocalStorageDebugger';
 
 // Simple localStorage debug utilities
@@ -82,6 +83,8 @@ const AppContent: React.FC = () => {
         return <UserManagement />;
       case 'roles':
         return <Roles />;
+      case 'system-users':
+        return <SystemUserManagement />;
       default:
         return <Dashboard />;
     }

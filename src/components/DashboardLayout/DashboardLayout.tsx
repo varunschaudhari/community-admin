@@ -20,6 +20,7 @@ import {
   FileTextOutlined,
   UsergroupAddOutlined,
   SafetyCertificateOutlined,
+  UserSwitchOutlined,
 } from '@ant-design/icons';
 import './DashboardLayout.css';
 
@@ -32,9 +33,29 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage = 'dashboard', onPageChange }) => {
   const { theme, isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
-  const { userName, firstName, lastName, isLoggedIn } = useLocalStorageUser();
+  const { userName, firstName, lastName, isLoggedIn, refreshUser } = useLocalStorageUser();
+
+  // Debug: Log the values from useLocalStorageUser
+  console.log('🔍 DashboardLayout - useLocalStorageUser values:', {
+    userName,
+    firstName,
+    lastName,
+    isLoggedIn,
+    user
+  });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Refresh user data when currentPage changes
+  React.useEffect(() => {
+    console.log('🔍 DashboardLayout - Page changed to:', currentPage);
+    console.log('🔍 DashboardLayout - Current user data:', { userName, firstName, lastName, isLoggedIn });
+    console.log('🔍 DashboardLayout - isLoggedIn calculation:', !!(localStorage.getItem('user') && localStorage.getItem('authToken')));
+    console.log('🔍 DashboardLayout - localStorage user:', localStorage.getItem('user'));
+    console.log('🔍 DashboardLayout - localStorage authToken:', localStorage.getItem('authToken'));
+    refreshUser();
+  }, [currentPage, refreshUser, userName, firstName, lastName, isLoggedIn]);
+
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -48,8 +69,31 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage
     setSidebarOpen(false);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Check if it's a system user and handle logout differently
+    const systemUserType = localStorage.getItem('systemUserType');
+    if (systemUserType === 'system') {
+      // Clear system user data without showing confirmation dialog
+      localStorage.removeItem('systemUserType');
+      localStorage.removeItem('systemUser');
+      localStorage.removeItem('systemAuthToken');
+      localStorage.removeItem('tokenExpiry');
+      // Also clear any community user data if present
+      localStorage.removeItem('user');
+      localStorage.removeItem('authToken');
+
+      // Dispatch event to notify components
+      window.dispatchEvent(new CustomEvent('userDataUpdated'));
+
+      // Redirect to login page
+      window.location.href = '/';
+    } else {
+      // Use normal logout for community users
+      logout();
+    }
   };
 
   const navigationItems = [
@@ -60,6 +104,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage
     { key: 'documents', label: NAVIGATION.DOCUMENTS, icon: <FileTextOutlined />, active: currentPage === 'documents' },
     { key: 'user', label: NAVIGATION.USERS, icon: <UsergroupAddOutlined />, active: currentPage === 'user' },
     { key: 'user-management', label: 'User Management', icon: <UserOutlined />, active: currentPage === 'user-management' },
+    { key: 'system-users', label: 'System Users', icon: <UserSwitchOutlined />, active: currentPage === 'system-users' },
     { key: 'roles', label: 'Roles', icon: <SafetyCertificateOutlined />, active: currentPage === 'roles' },
     { key: 'settings', label: NAVIGATION.SETTINGS, icon: <SettingOutlined />, active: currentPage === 'settings' },
   ];

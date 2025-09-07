@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLocalStorageUser } from '../../hooks/useLocalStorageUser';
 import { SETTINGS, FORMS, SUCCESS } from '../../constants';
 import {
   SettingOutlined,
@@ -20,13 +21,14 @@ import './Settings.css';
 
 const Settings: React.FC = () => {
   const { theme, isDark, toggleTheme } = useTheme();
+  const { user, refreshUser } = useLocalStorageUser();
   const [settings, setSettings] = useState({
     profile: {
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
-      phone: '+1 (555) 123-4567',
-      bio: 'Software developer with 5+ years of experience in web development.',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      bio: '',
     },
     notifications: {
       email: true,
@@ -45,6 +47,34 @@ const Settings: React.FC = () => {
       timezone: 'UTC',
     },
   });
+
+  // Load user data into settings when component mounts or user changes
+  useEffect(() => {
+    console.log('🔍 Settings - useEffect triggered, user:', user);
+    if (user) {
+      console.log('🔍 Settings - Loading user data:', user);
+      console.log('🔍 Settings - User firstName:', user.firstName);
+      console.log('🔍 Settings - User lastName:', user.lastName);
+      console.log('🔍 Settings - User email:', user.email);
+      setSettings(prev => ({
+        ...prev,
+        profile: {
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          bio: '', // Bio field not available in user data
+        },
+      }));
+    } else {
+      console.log('🔍 Settings - No user data available');
+    }
+  }, [user]);
+
+  // Refresh user data when component mounts
+  useEffect(() => {
+    refreshUser();
+  }, [refreshUser]);
 
   const handleInputChange = (section: string, field: string, value: any) => {
     setSettings(prev => ({

@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { systemAuthService } from '../services/SystemAuthService';
+import { authService } from '../services/AuthService';
 import {
   UserOutlined,
   LockOutlined,
   EyeInvisibleOutlined,
   EyeTwoTone,
   MailOutlined,
-  ArrowRightOutlined
+  ArrowRightOutlined,
+  TeamOutlined,
+  UserSwitchOutlined
 } from '@ant-design/icons';
 
 const LoginContainer = styled.div`
@@ -193,9 +197,75 @@ const ErrorMessage = styled.div`
   margin-top: ${({ theme }) => theme.spacing.sm};
 `;
 
+const UserTypeSelector = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  background: ${({ theme }) => theme.colors.background};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  padding: 4px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const UserTypeButton = styled.button<{ active: boolean }>`
+  flex: 1;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  border: none;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
+  background: ${({ active, theme }) =>
+    active ? theme.colors.gradient.primary : 'transparent'};
+  color: ${({ active, theme }) =>
+    active ? 'white' : theme.colors.text.secondary};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+
+  &:hover {
+    background: ${({ active, theme }) =>
+    active ? theme.colors.gradient.primary : theme.colors.background};
+    color: ${({ active, theme }) =>
+    active ? 'white' : theme.colors.text.primary};
+  }
+`;
+
+const LoginInfo = styled.div`
+  background: ${({ theme }) => theme.colors.background};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  padding: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacing.lg};
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  line-height: 1.4;
+`;
+
+const LoginInfoTitle = styled.div`
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  color: ${({ theme }) => theme.colors.text.primary};
+  margin-bottom: ${({ theme }) => theme.spacing.xs};
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const LoginInfoList = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.xs};
+`;
+
+const LoginInfoItem = styled.div`
+  margin-bottom: 2px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+`;
+
 const LoginPage: React.FC = () => {
   const { theme } = useTheme();
-  const { login, error: authError, clearError } = useAuth();
+  const { login, setUser, error: authError, clearError } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -203,6 +273,7 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [userType, setUserType] = useState<'community' | 'system'>('community');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -231,17 +302,77 @@ const LoginPage: React.FC = () => {
         return;
       }
 
-      // Call the login function from auth context
-      await login({
-        username: formData.username,
-        password: formData.password,
-      });
+      if (userType === 'community') {
+        // Call the community login function from auth context
+        await login({
+          username: formData.username,
+          password: formData.password,
+        });
+        console.log('Community login successful');
+      } else {
+        // Call the system login function
+        const response = await systemAuthService.login(formData.username, formData.password);
 
-      // Success - the auth context will handle the redirect
-      console.log('Login successful');
+        if (response.success) {
+          console.log('System login successful');
+
+          // For system users, we'll use the community auth context to maintain session
+          // Store the system user data in the same format as community users
+          const systemUserData = {
+            _id: response.data.user._id,
+            username: response.data.user.username,
+            email: response.data.user.email,
+            firstName: response.data.user.firstName,
+            lastName: response.data.user.lastName,
+            role: response.data.user.systemRole as 'Super Admin' | 'Admin' | 'Member' | 'Moderator' | 'Guest' | 'admin',
+            userType: 'system' as const,
+            department: response.data.user.department,
+            employeeId: response.data.user.employeeId,
+            accessLevel: response.data.user.accessLevel,
+            verified: response.data.user.verified,
+            isActive: response.data.user.isActive,
+            createdAt: response.data.user.createdAt,
+            updatedAt: response.data.user.updatedAt
+          };
+
+          // Debug: Log the system user data being stored
+          console.log('🔍 System User Data to be stored:', systemUserData);
+          console.log('🔍 Original response data:', response.data.user);
+
+          // Follow the exact same pattern as community users
+          // 1. Store token and user data using AuthService methods (this stores in 'authToken' and 'user' keys)
+          authService.setToken(response.data.token);
+          authService.setUser(systemUserData);
+
+          // 2. Set token expiry time (8 hours for system users)
+          const expiryTime = new Date();
+          expiryTime.setHours(expiryTime.getHours() + 8);
+          localStorage.setItem('tokenExpiry', expiryTime.toISOString());
+
+          console.log('🔍 LoginPage - Set token expiry for system user:', expiryTime.toISOString());
+          console.log('🔍 LoginPage - Current time:', new Date().toISOString());
+          console.log('🔍 LoginPage - Time until expiry:', Math.round((expiryTime.getTime() - new Date().getTime()) / 60000), 'minutes');
+
+          // 3. Update AuthContext state (same as community users)
+          setUser(systemUserData);
+
+          // 4. Also store system-specific data for System User Management
+          localStorage.setItem('systemUserType', 'system');
+          localStorage.setItem('systemUser', JSON.stringify(response.data.user));
+          localStorage.setItem('systemAuthToken', response.data.token);
+
+          // Debug: Check what's actually in localStorage
+          console.log('🔍 LoginPage - Final localStorage check:');
+          console.log('  user:', localStorage.getItem('user'));
+          console.log('  authToken:', localStorage.getItem('authToken'));
+          console.log('  tokenExpiry:', localStorage.getItem('tokenExpiry'));
+        } else {
+          throw new Error(response.message || 'System login failed');
+        }
+      }
 
     } catch (err) {
-      // Error is handled by the auth context
+      setError(err instanceof Error ? err.message : 'Login failed');
       console.error('Login error:', err);
     } finally {
       setIsLoading(false);
@@ -258,6 +389,25 @@ const LoginPage: React.FC = () => {
         </BrandSection>
 
         <Form onSubmit={handleSubmit}>
+          <UserTypeSelector>
+            <UserTypeButton
+              type="button"
+              active={userType === 'community'}
+              onClick={() => setUserType('community')}
+            >
+              <TeamOutlined />
+              Community User
+            </UserTypeButton>
+            <UserTypeButton
+              type="button"
+              active={userType === 'system'}
+              onClick={() => setUserType('system')}
+            >
+              <UserSwitchOutlined />
+              System User
+            </UserTypeButton>
+          </UserTypeSelector>
+
           <FormGroup>
             <InputWrapper>
               <InputIcon>
@@ -266,7 +416,7 @@ const LoginPage: React.FC = () => {
               <Input
                 type="text"
                 name="username"
-                placeholder="Enter your username"
+                placeholder={`Enter your ${userType} username`}
                 value={formData.username}
                 onChange={handleInputChange}
                 required
@@ -307,6 +457,28 @@ const LoginPage: React.FC = () => {
 
           {(error || authError) && <ErrorMessage>{error || authError}</ErrorMessage>}
         </Form>
+
+        <LoginInfo>
+          <LoginInfoTitle>
+            <UserOutlined />
+            {userType === 'community' ? 'Community User' : 'System User'} Login Credentials
+          </LoginInfoTitle>
+          {userType === 'community' ? (
+            <LoginInfoList>
+              <LoginInfoItem>Super Admin: varun / varun123</LoginInfoItem>
+              <LoginInfoItem>Admin: admin / admin123</LoginInfoItem>
+              <LoginInfoItem>Moderator: moderator / moderator123</LoginInfoItem>
+              <LoginInfoItem>Member: member1 / member123</LoginInfoItem>
+            </LoginInfoList>
+          ) : (
+            <LoginInfoList>
+              <LoginInfoItem>System Admin: sysadmin / SystemAdmin123!@#</LoginInfoItem>
+              <LoginInfoItem>System Manager: sysmanager / SystemManager123!@#</LoginInfoItem>
+              <LoginInfoItem>System Operator: sysoperator / SystemOperator123!@#</LoginInfoItem>
+              <LoginInfoItem>System Viewer: sysviewer / SystemViewer123!@#</LoginInfoItem>
+            </LoginInfoList>
+          )}
+        </LoginInfo>
       </LoginCard>
     </LoginContainer>
   );

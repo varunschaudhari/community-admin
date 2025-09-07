@@ -28,6 +28,12 @@ interface User {
     fullName?: string;
     displayName?: string;
     id?: string;
+    // System user specific fields
+    userType?: 'system' | 'community';
+    department?: string;
+    employeeId?: string;
+    accessLevel?: number;
+    systemRole?: string;
 }
 
 interface UseLocalStorageUserReturn {
@@ -53,10 +59,39 @@ export const useLocalStorageUser = (): UseLocalStorageUserReturn => {
 
     const getUserFromStorage = (): User | null => {
         try {
+            // Check for system user first
+            const systemUserType = localStorage.getItem('systemUserType');
+            if (systemUserType === 'system') {
+                const systemUserData = localStorage.getItem('systemUser');
+                const systemToken = localStorage.getItem('systemAuthToken');
+
+                console.log('🔍 useLocalStorageUser - System user detected:');
+                console.log('  System User Data:', systemUserData);
+                console.log('  System Token:', systemToken);
+
+                if (systemUserData && systemToken) {
+                    const parsedData = JSON.parse(systemUserData);
+                    console.log('  Parsed System Data:', parsedData);
+
+                    // Basic validation to ensure we have a valid system user object
+                    if (parsedData && typeof parsedData === 'object' && parsedData._id) {
+                        console.log('  ✅ Valid system user found:', parsedData.firstName, parsedData.lastName);
+                        return parsedData;
+                    } else {
+                        console.log('  ❌ Invalid system user object structure');
+                        console.log('  Expected: object with _id property');
+                        console.log('  Got:', parsedData);
+                    }
+                } else {
+                    console.log('  ❌ Missing system user data or token');
+                }
+            }
+
+            // Fallback to community user data
             const userData = localStorage.getItem('user');
             const token = localStorage.getItem('authToken');
 
-            console.log('🔍 useLocalStorageUser - getUserFromStorage:');
+            console.log('🔍 useLocalStorageUser - Community user check:');
             console.log('  User Data:', userData);
             console.log('  Token:', token);
 
@@ -75,7 +110,7 @@ export const useLocalStorageUser = (): UseLocalStorageUserReturn => {
 
                 // Basic validation to ensure we have a valid user object
                 if (userObject && typeof userObject === 'object' && userObject._id) {
-                    console.log('  ✅ Valid user found:', userObject.firstName, userObject.lastName);
+                    console.log('  ✅ Valid community user found:', userObject.firstName, userObject.lastName);
                     return userObject;
                 } else {
                     console.log('  ❌ Invalid user object structure');
@@ -101,12 +136,22 @@ export const useLocalStorageUser = (): UseLocalStorageUserReturn => {
         // Add a small delay to ensure localStorage is available
         const timer = setTimeout(() => {
             const storedUser = getUserFromStorage();
+            console.log('🔍 useLocalStorageUser - Initial load:', storedUser);
             setUser(storedUser);
             setIsLoading(false);
         }, 100);
 
         return () => clearTimeout(timer);
     }, []);
+
+    // Also check localStorage on every render to catch updates
+    useEffect(() => {
+        const storedUser = getUserFromStorage();
+        if (storedUser && (!user || storedUser._id !== user._id)) {
+            console.log('🔍 useLocalStorageUser - User data changed, updating:', storedUser);
+            setUser(storedUser);
+        }
+    });
 
     // Listen for storage changes (when user logs in/out in another tab)
     useEffect(() => {
@@ -144,24 +189,137 @@ export const useLocalStorageUser = (): UseLocalStorageUserReturn => {
     // Also listen for custom events (for same-tab updates)
     useEffect(() => {
         const handleUserUpdate = () => {
+            console.log('🔍 useLocalStorageUser - userDataUpdated event received');
             const storedUser = getUserFromStorage();
+            console.log('🔍 useLocalStorageUser - Retrieved user from storage:', storedUser);
             setUser(storedUser);
         };
 
+        console.log('🔍 useLocalStorageUser - Setting up event listener for userDataUpdated');
         window.addEventListener('userDataUpdated', handleUserUpdate);
-        return () => window.removeEventListener('userDataUpdated', handleUserUpdate);
+        return () => {
+            console.log('🔍 useLocalStorageUser - Removing event listener for userDataUpdated');
+            window.removeEventListener('userDataUpdated', handleUserUpdate);
+        };
     }, []);
 
-    const userName = user && user.firstName && user.lastName
-        ? `${user.firstName} ${user.lastName}`
-        : user?.firstName || user?.username || 'Unknown User';
+    // More robust userName calculation - check both system and community user data
+    const getUserName = (): string => {
+        if (user && user.firstName && user.lastName) {
+            return `${user.firstName} ${user.lastName}`;
+        }
+        if (user?.firstName) return user.firstName;
+        if (user?.username) return user.username;
 
-    const firstName = user?.firstName || 'Unknown';
-    const lastName = user?.lastName || 'Unknown';
-    const username = user?.username || 'Unknown';
-    const email = user?.email || 'Unknown';
-    const role = user?.role || 'Unknown';
-    const isLoggedIn = !!(user && localStorage.getItem('authToken'));
+        // Fallback: check localStorage directly
+        try {
+            // Check for system user first
+            const systemUserType = localStorage.getItem('systemUserType');
+            if (systemUserType === 'system') {
+                const systemUserData = localStorage.getItem('systemUser');
+                if (systemUserData) {
+                    const parsedData = JSON.parse(systemUserData);
+                    if (parsedData && parsedData.firstName && parsedData.lastName) {
+                        return `${parsedData.firstName} ${parsedData.lastName}`;
+                    }
+                    if (parsedData?.firstName) return parsedData.firstName;
+                    if (parsedData?.username) return parsedData.username;
+                }
+            }
+
+            // Fallback to community user data
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                const parsedData = JSON.parse(userData);
+                let userObject = parsedData;
+                if (parsedData && typeof parsedData === 'object' && parsedData.user) {
+                    userObject = parsedData.user;
+                }
+                if (userObject && userObject.firstName && userObject.lastName) {
+                    return `${userObject.firstName} ${userObject.lastName}`;
+                }
+                if (userObject?.firstName) return userObject.firstName;
+                if (userObject?.username) return userObject.username;
+            }
+        } catch (error) {
+            console.error('Error parsing user data from localStorage:', error);
+        }
+
+        return 'Unknown User';
+    };
+
+    const userName = getUserName();
+
+    // Debug: Log the computed userName and user data
+    console.log('🔍 useLocalStorageUser - User data:', user);
+    console.log('🔍 useLocalStorageUser - Computed userName:', userName);
+
+    // Make getUserFromStorage available globally for debugging
+    if (typeof window !== 'undefined') {
+        (window as any).debugGetUserFromStorage = getUserFromStorage;
+        (window as any).debugLocalStorage = () => {
+            console.log('🔍 Debug localStorage:');
+            console.log('  user:', localStorage.getItem('user'));
+            console.log('  authToken:', localStorage.getItem('authToken'));
+            console.log('  tokenExpiry:', localStorage.getItem('tokenExpiry'));
+        };
+    }
+
+
+    // More robust field calculations - check both system and community user data
+    const getFieldValue = (field: string): string => {
+        if (user && user[field as keyof User]) {
+            return user[field as keyof User] as string;
+        }
+
+        // Fallback: check localStorage directly
+        try {
+            // Check for system user first
+            const systemUserType = localStorage.getItem('systemUserType');
+            if (systemUserType === 'system') {
+                const systemUserData = localStorage.getItem('systemUser');
+                if (systemUserData) {
+                    const parsedData = JSON.parse(systemUserData);
+                    if (parsedData && parsedData[field]) {
+                        return parsedData[field];
+                    }
+                }
+            }
+
+            // Fallback to community user data
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                const parsedData = JSON.parse(userData);
+                let userObject = parsedData;
+                if (parsedData && typeof parsedData === 'object' && parsedData.user) {
+                    userObject = parsedData.user;
+                }
+                if (userObject && userObject[field]) {
+                    return userObject[field];
+                }
+            }
+        } catch (error) {
+            console.error(`Error parsing ${field} from localStorage:`, error);
+        }
+
+        return 'Unknown';
+    };
+
+    const firstName = getFieldValue('firstName');
+    const lastName = getFieldValue('lastName');
+    const username = getFieldValue('username');
+    const email = getFieldValue('email');
+    const role = getFieldValue('role');
+    // More robust isLoggedIn calculation - check both system and community user data
+    const isLoggedIn = (() => {
+        // Check for system user first
+        const systemUserType = localStorage.getItem('systemUserType');
+        if (systemUserType === 'system') {
+            return !!(localStorage.getItem('systemUser') && localStorage.getItem('systemAuthToken'));
+        }
+        // Fallback to community user
+        return !!(localStorage.getItem('user') && localStorage.getItem('authToken'));
+    })();
 
     return {
         user,
