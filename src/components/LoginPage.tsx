@@ -12,7 +12,8 @@ import {
   MailOutlined,
   ArrowRightOutlined,
   TeamOutlined,
-  UserSwitchOutlined
+  UserSwitchOutlined,
+  PhoneOutlined
 } from '@ant-design/icons';
 
 const LoginContainer = styled.div`
@@ -293,13 +294,23 @@ const LoginPage: React.FC = () => {
     try {
       // Simple validation
       if (!formData.username || !formData.password) {
-        setError('Please fill in all fields');
+        setError(userType === 'community' ? 'Please enter your mobile number and password' : 'Please fill in all fields');
         return;
       }
 
-      if (formData.username.length < 3) {
-        setError('Username must be at least 3 characters long');
-        return;
+      if (userType === 'community') {
+        // Validate mobile number format for community users
+        const mobileRegex = /^[0-9]{10}$/;
+        if (!mobileRegex.test(formData.username)) {
+          setError('Please enter a valid 10-digit mobile number');
+          return;
+        }
+      } else {
+        // Validate username for system users
+        if (formData.username.length < 3) {
+          setError('Username must be at least 3 characters long');
+          return;
+        }
       }
 
       if (userType === 'community') {
@@ -411,12 +422,12 @@ const LoginPage: React.FC = () => {
           <FormGroup>
             <InputWrapper>
               <InputIcon>
-                <UserOutlined />
+                {userType === 'community' ? <PhoneOutlined /> : <UserOutlined />}
               </InputIcon>
               <Input
-                type="text"
+                type={userType === 'community' ? 'tel' : 'text'}
                 name="username"
-                placeholder={`Enter your ${userType} username`}
+                placeholder={userType === 'community' ? 'Enter your mobile number' : 'Enter your username'}
                 value={formData.username}
                 onChange={handleInputChange}
                 required
@@ -465,10 +476,10 @@ const LoginPage: React.FC = () => {
           </LoginInfoTitle>
           {userType === 'community' ? (
             <LoginInfoList>
-              <LoginInfoItem>Super Admin: varun / varun123</LoginInfoItem>
-              <LoginInfoItem>Admin: admin / admin123</LoginInfoItem>
-              <LoginInfoItem>Moderator: moderator / moderator123</LoginInfoItem>
-              <LoginInfoItem>Member: member1 / member123</LoginInfoItem>
+              <LoginInfoItem>Super Admin: 9876543211 / varun123</LoginInfoItem>
+              <LoginInfoItem>Admin: 9876543210 / admin123</LoginInfoItem>
+              <LoginInfoItem>Moderator: 9876543212 / moderator123</LoginInfoItem>
+              <LoginInfoItem>Member: 9876543213 / member123</LoginInfoItem>
             </LoginInfoList>
           ) : (
             <LoginInfoList>

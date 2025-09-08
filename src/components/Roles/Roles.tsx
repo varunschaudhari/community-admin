@@ -90,8 +90,9 @@ const Roles: React.FC = () => {
       const response = await roleService.getAllRoles();
       setRoles(response.data || []);
     } catch (error) {
-      message.error('Failed to fetch roles');
-      console.error('Fetch roles error:', error);
+      console.error('Failed to fetch roles:', error);
+      message.error('Failed to fetch roles. Please check your authentication and try again.');
+      setRoles([]);
     } finally {
       setLoading(false);
     }

@@ -131,7 +131,8 @@ const User: React.FC = () => {
       const response = await roleService.getAllRoles();
       setRoles((response.data || []) as Role[]);
     } catch (error) {
-      console.error('Fetch roles error:', error);
+      console.error('Failed to fetch roles:', error);
+      setRoles([]);
     }
   };
 

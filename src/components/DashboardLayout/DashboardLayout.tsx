@@ -3,6 +3,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocalStorageUser } from '../../hooks/useLocalStorageUser';
 import { NAVIGATION, HEADER, BRAND } from '../../constants';
+import { useDynamicPermissions } from '../../hooks/useDynamicPermissions';
 import {
   DashboardOutlined,
   MessageOutlined,
@@ -34,6 +35,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage
   const { theme, isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const { userName, firstName, lastName, isLoggedIn, refreshUser } = useLocalStorageUser();
+  const { canAccessResource, isLoading: permissionsLoading } = useDynamicPermissions();
 
   // Debug: Log the values from useLocalStorageUser
   console.log('🔍 DashboardLayout - useLocalStorageUser values:', {
@@ -96,18 +98,75 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage
     }
   };
 
-  const navigationItems = [
-    { key: 'dashboard', label: NAVIGATION.DASHBOARD, icon: <DashboardOutlined />, active: currentPage === 'dashboard' },
-    { key: 'analytics', label: NAVIGATION.ANALYTICS, icon: <BarChartOutlined />, active: currentPage === 'analytics' },
-    { key: 'messages', label: NAVIGATION.MESSAGES, icon: <MessageOutlined />, active: currentPage === 'messages' },
-    { key: 'team', label: NAVIGATION.TEAM, icon: <TeamOutlined />, active: currentPage === 'team' },
-    { key: 'documents', label: NAVIGATION.DOCUMENTS, icon: <FileTextOutlined />, active: currentPage === 'documents' },
-    { key: 'user', label: NAVIGATION.USERS, icon: <UsergroupAddOutlined />, active: currentPage === 'user' },
-    { key: 'user-management', label: 'User Management', icon: <UserOutlined />, active: currentPage === 'user-management' },
-    { key: 'system-users', label: 'System Users', icon: <UserSwitchOutlined />, active: currentPage === 'system-users' },
-    { key: 'roles', label: 'Roles', icon: <SafetyCertificateOutlined />, active: currentPage === 'roles' },
-    { key: 'settings', label: NAVIGATION.SETTINGS, icon: <SettingOutlined />, active: currentPage === 'settings' },
+  // Define all possible navigation items
+  const allNavigationItems = [
+    {
+      key: 'dashboard',
+      label: NAVIGATION.DASHBOARD,
+      icon: <DashboardOutlined />,
+      active: currentPage === 'dashboard'
+    },
+    {
+      key: 'analytics',
+      label: NAVIGATION.ANALYTICS,
+      icon: <BarChartOutlined />,
+      active: currentPage === 'analytics'
+    },
+    {
+      key: 'messages',
+      label: NAVIGATION.MESSAGES,
+      icon: <MessageOutlined />,
+      active: currentPage === 'messages'
+    },
+    {
+      key: 'team',
+      label: NAVIGATION.TEAM,
+      icon: <TeamOutlined />,
+      active: currentPage === 'team'
+    },
+    {
+      key: 'documents',
+      label: NAVIGATION.DOCUMENTS,
+      icon: <FileTextOutlined />,
+      active: currentPage === 'documents'
+    },
+    {
+      key: 'user',
+      label: NAVIGATION.USERS,
+      icon: <UsergroupAddOutlined />,
+      active: currentPage === 'user'
+    },
+    {
+      key: 'user-management',
+      label: 'User Management',
+      icon: <UserOutlined />,
+      active: currentPage === 'user-management'
+    },
+    {
+      key: 'system-users',
+      label: 'System Users',
+      icon: <UserSwitchOutlined />,
+      active: currentPage === 'system-users'
+    },
+    {
+      key: 'roles',
+      label: 'Roles',
+      icon: <SafetyCertificateOutlined />,
+      active: currentPage === 'roles'
+    },
+    {
+      key: 'settings',
+      label: NAVIGATION.SETTINGS,
+      icon: <SettingOutlined />,
+      active: currentPage === 'settings'
+    },
   ];
+
+  // Filter navigation items based on dynamic permissions
+  const navigationItems = allNavigationItems.filter(item => {
+    if (permissionsLoading) return false; // Don't show items while loading
+    return canAccessResource(item.key);
+  });
 
   return (
     <div className="layout-container">

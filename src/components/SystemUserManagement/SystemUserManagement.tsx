@@ -52,8 +52,10 @@ const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ className =
             setSystemUsers(response.data.systemUsers);
             setPagination(response.data.pagination);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load system users');
-            console.error('Error loading system users:', err);
+            console.error('Failed to load system users:', err);
+            setError(err instanceof Error ? err.message : 'Failed to load system users. Please check your authentication and try again.');
+            setSystemUsers([]);
+            setPagination({ totalUsers: 0, totalPages: 0, currentPage: 1, hasNext: false, hasPrev: false });
         } finally {
             setLoading(false);
         }
@@ -65,7 +67,8 @@ const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ className =
             const response = await systemUserManagementService.getSystemUserStats();
             setStats(response.data);
         } catch (err) {
-            console.error('Error loading stats:', err);
+            console.error('Failed to load stats:', err);
+            setStats(null);
         }
     };
 

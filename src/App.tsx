@@ -10,6 +10,8 @@ import UserManagement from './components/UserManagement/UserManagement';
 import Roles from './components/Roles/Roles';
 import SystemUserManagement from './components/SystemUserManagement/SystemUserManagement';
 import { LocalStorageDebugButton } from './components/LocalStorageDebugger/LocalStorageDebugger';
+import PermissionManager from './components/PermissionManager/PermissionManager';
+import { useDynamicPermissions } from './hooks/useDynamicPermissions';
 
 // Simple localStorage debug utilities
 const debugLocalStorage = () => {
@@ -70,8 +72,25 @@ if (typeof window !== 'undefined') {
 const AppContent: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [showPermissionManager, setShowPermissionManager] = useState(false);
+  const { canAccessResource, isLoading: permissionsLoading } = useDynamicPermissions();
+
+  // Redirect users away from pages they don't have permission to access
+  useEffect(() => {
+    if (!permissionsLoading && currentPage !== 'dashboard' && !canAccessResource(currentPage)) {
+      console.log(`🚫 User doesn't have permission to access ${currentPage}, redirecting to dashboard`);
+      setCurrentPage('dashboard');
+    }
+  }, [currentPage, canAccessResource, permissionsLoading]);
 
   const renderContent = () => {
+    // Check if user has permission to access the current page
+    if (!permissionsLoading && currentPage !== 'dashboard' && !canAccessResource(currentPage)) {
+      console.log(`🚫 Access denied for ${currentPage}, showing dashboard`);
+      setCurrentPage('dashboard');
+      return <Dashboard />;
+    }
+
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard />;
@@ -120,6 +139,30 @@ const AppContent: React.FC = () => {
         {renderContent()}
       </DashboardLayout>
       <LocalStorageDebugButton />
+      <PermissionManager isVisible={showPermissionManager} />
+
+      {/* Permission Manager Toggle Button */}
+      <button
+        onClick={() => setShowPermissionManager(!showPermissionManager)}
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          background: '#28a745',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          width: '60px',
+          height: '60px',
+          fontSize: '24px',
+          cursor: 'pointer',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
+          zIndex: 9999
+        }}
+        title="Permission Manager"
+      >
+        🔧
+      </button>
     </ThemeProvider>
   );
 };
