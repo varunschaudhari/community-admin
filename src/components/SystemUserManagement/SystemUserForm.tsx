@@ -21,9 +21,8 @@ const SystemUserForm: React.FC<SystemUserFormProps> = ({ user, onSubmit, onCance
         middleName: '',
         lastName: '',
         phone: '',
-        systemRole: 'System Viewer',
+        role: 'Member',
         accessLevel: 2,
-        permissions: [] as string[],
     });
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -45,9 +44,8 @@ const SystemUserForm: React.FC<SystemUserFormProps> = ({ user, onSubmit, onCance
                 middleName: user.middleName || '',
                 lastName: user.lastName,
                 phone: user.phone,
-                systemRole: user.systemRole,
+                role: user.role,
                 accessLevel: user.accessLevel,
-                permissions: user.permissions,
             });
         }
     }, [user]);
@@ -55,7 +53,6 @@ const SystemUserForm: React.FC<SystemUserFormProps> = ({ user, onSubmit, onCance
     // Get options
     const departmentOptions = systemUserManagementService.getDepartmentOptions();
     const roleOptions = systemUserManagementService.getSystemRoleOptions();
-    const permissionOptions = systemUserManagementService.getPermissionOptions();
 
     // Handle input changes
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -81,36 +78,11 @@ const SystemUserForm: React.FC<SystemUserFormProps> = ({ user, onSubmit, onCance
 
         setFormData(prev => ({
             ...prev,
-            systemRole: selectedRole,
+            role: selectedRole,
             accessLevel: role?.accessLevel || 2
         }));
     };
 
-    // Handle permission toggle
-    const handlePermissionToggle = (permission: string) => {
-        setFormData(prev => ({
-            ...prev,
-            permissions: prev.permissions.includes(permission)
-                ? prev.permissions.filter(p => p !== permission)
-                : [...prev.permissions, permission]
-        }));
-    };
-
-    // Handle category permission toggle
-    const handleCategoryToggle = (category: string) => {
-        const categoryPermissions = permissionOptions
-            .filter(p => p.category === category)
-            .map(p => p.value);
-
-        const allSelected = categoryPermissions.every(p => formData.permissions.includes(p));
-
-        setFormData(prev => ({
-            ...prev,
-            permissions: allSelected
-                ? prev.permissions.filter(p => !categoryPermissions.includes(p))
-                : Array.from(new Set([...prev.permissions, ...categoryPermissions]))
-        }));
-    };
 
     // Validate form
     const validateForm = () => {
@@ -188,14 +160,6 @@ const SystemUserForm: React.FC<SystemUserFormProps> = ({ user, onSubmit, onCance
         }
     };
 
-    // Group permissions by category
-    const permissionsByCategory = permissionOptions.reduce((acc, permission) => {
-        if (!acc[permission.category]) {
-            acc[permission.category] = [];
-        }
-        acc[permission.category].push(permission);
-        return acc;
-    }, {} as { [key: string]: typeof permissionOptions });
 
     return (
         <form className="system-user-form" onSubmit={handleSubmit}>
@@ -371,11 +335,11 @@ const SystemUserForm: React.FC<SystemUserFormProps> = ({ user, onSubmit, onCance
 
                 <div className="form-row">
                     <div className="form-group">
-                        <label htmlFor="systemRole">System Role *</label>
+                        <label htmlFor="role">System Role *</label>
                         <select
-                            id="systemRole"
-                            name="systemRole"
-                            value={formData.systemRole}
+                            id="role"
+                            name="role"
+                            value={formData.role}
                             onChange={handleRoleChange}
                             className="form-control"
                         >
@@ -408,47 +372,13 @@ const SystemUserForm: React.FC<SystemUserFormProps> = ({ user, onSubmit, onCance
             </div>
 
             <div className="form-section">
-                <h4>Permissions</h4>
+                <h4>Role Information</h4>
                 <p className="form-text text-muted">
-                    Select the permissions this system user should have. You can select individual permissions or entire categories.
+                    The user's permissions are determined by their assigned role. To modify permissions, update the role in the Roles module.
                 </p>
-
-                <div className="permissions-container">
-                    {Object.entries(permissionsByCategory).map(([category, permissions]) => {
-                        const allSelected = permissions.every(p => formData.permissions.includes(p.value));
-                        const someSelected = permissions.some(p => formData.permissions.includes(p.value));
-
-                        return (
-                            <div key={category} className="permission-category">
-                                <div className="permission-category-header">
-                                    <label className="permission-category-checkbox">
-                                        <input
-                                            type="checkbox"
-                                            checked={allSelected}
-                                            ref={(input) => {
-                                                if (input) input.indeterminate = someSelected && !allSelected;
-                                            }}
-                                            onChange={() => handleCategoryToggle(category)}
-                                        />
-                                        <span className="permission-category-title">{category}</span>
-                                    </label>
-                                </div>
-
-                                <div className="permission-list">
-                                    {permissions.map(permission => (
-                                        <label key={permission.value} className="permission-item">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.permissions.includes(permission.value)}
-                                                onChange={() => handlePermissionToggle(permission.value)}
-                                            />
-                                            <span className="permission-label">{permission.label}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })}
+                <div className="alert alert-info">
+                    <i className="fas fa-info-circle"></i>
+                    <strong>Note:</strong> Individual permissions are managed in the Roles module. Users inherit permissions from their assigned role.
                 </div>
             </div>
 

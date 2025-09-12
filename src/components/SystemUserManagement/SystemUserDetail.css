@@ -1,0 +1,186 @@
+.system-user-detail-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+    padding: 20px;
+}
+
+.system-user-detail-modal {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-width: 900px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.system-user-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+}
+
+.system-user-detail-header h3 {
+    margin: 0;
+    color: #495057;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.system-user-detail-content {
+    padding: 24px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.detail-section {
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.detail-section h5 {
+    margin: 0 0 16px 0;
+    color: #495057;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: #6c757d;
+    margin: 0;
+    min-width: 140px;
+}
+
+.detail-item span {
+    color: #495057;
+    text-align: right;
+    flex: 1;
+}
+
+.detail-item code {
+    background-color: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.permissions-list {
+    margin-top: 12px;
+}
+
+.permission-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.permission-tag {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.system-user-detail-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 24px;
+    border-top: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+}
+
+.system-user-detail-footer .btn {
+    min-width: 120px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .system-user-detail-overlay {
+        padding: 10px;
+    }
+
+    .system-user-detail-modal {
+        max-height: 95vh;
+    }
+
+    .system-user-detail-content {
+        padding: 16px;
+    }
+
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .detail-item label {
+        min-width: auto;
+    }
+
+    .detail-item span {
+        text-align: left;
+    }
+
+    .system-user-detail-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .system-user-detail-footer .btn {
+        width: 100%;
+    }
+}
+
+/* Animation */
+.system-user-detail-modal {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

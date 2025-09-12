@@ -483,10 +483,10 @@ const LoginPage: React.FC = () => {
             </LoginInfoList>
           ) : (
             <LoginInfoList>
-              <LoginInfoItem>System Admin: sysadmin / SystemAdmin123!@#</LoginInfoItem>
-              <LoginInfoItem>System Manager: sysmanager / SystemManager123!@#</LoginInfoItem>
-              <LoginInfoItem>System Operator: sysoperator / SystemOperator123!@#</LoginInfoItem>
-              <LoginInfoItem>System Viewer: sysviewer / SystemViewer123!@#</LoginInfoItem>
+              <LoginInfoItem>Super Admin: sysadmin / SystemAdmin123!@#</LoginInfoItem>
+              <LoginInfoItem>Admin: sysmanager / SystemManager123!@#</LoginInfoItem>
+              <LoginInfoItem>Moderator: sysoperator / SystemOperator123!@#</LoginInfoItem>
+              <LoginInfoItem>Member: sysviewer / SystemViewer123!@#</LoginInfoItem>
             </LoginInfoList>
           )}
         </LoginInfo>

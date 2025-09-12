@@ -10,6 +10,7 @@ import SystemUserList from './SystemUserList';
 import SystemUserForm from './SystemUserForm';
 import SystemUserStats from './SystemUserStats';
 import SystemUserFilters from './SystemUserFilters';
+import SystemUserDetail from './SystemUserDetail';
 import SystemLogin from './SystemLogin';
 import './SystemUserManagement.css';
 
@@ -24,6 +25,7 @@ const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ className =
     const [error, setError] = useState<string | null>(null);
     const [showForm, setShowForm] = useState(false);
     const [editingUser, setEditingUser] = useState<SystemUser | null>(null);
+    const [viewingUser, setViewingUser] = useState<SystemUser | null>(null);
     const [showLogin, setShowLogin] = useState(false);
     const [isSystemAuthenticated, setIsSystemAuthenticated] = useState(false);
     const [searchParams, setSearchParams] = useState<SystemUserSearchParams>({
@@ -151,6 +153,17 @@ const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ className =
             loadSystemUsers();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to unlock account');
+        }
+    };
+
+    // Handle user deletion
+    const handleDeleteUser = async (userId: string) => {
+        try {
+            await systemUserManagementService.deleteSystemUser(userId);
+            loadSystemUsers();
+            loadStats();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to delete user');
         }
     };
 
@@ -291,6 +304,8 @@ const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ className =
                 loading={loading}
                 pagination={pagination}
                 onEdit={(user) => setEditingUser(user)}
+                onView={(user) => setViewingUser(user)}
+                onDelete={handleDeleteUser}
                 onToggleStatus={handleToggleUserStatus}
                 onResetPassword={handleResetPassword}
                 onUnlockAccount={handleUnlockAccount}
@@ -333,6 +348,22 @@ const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ className =
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* User Detail Modal */}
+            {viewingUser && (
+                <SystemUserDetail
+                    user={viewingUser}
+                    onClose={() => setViewingUser(null)}
+                    onEdit={(user) => {
+                        setViewingUser(null);
+                        setEditingUser(user);
+                    }}
+                    onDelete={(userId) => {
+                        setViewingUser(null);
+                        handleDeleteUser(userId);
+                    }}
+                />
             )}
         </div>
     );

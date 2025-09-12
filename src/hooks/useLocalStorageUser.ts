@@ -151,7 +151,7 @@ export const useLocalStorageUser = (): UseLocalStorageUserReturn => {
             console.log('🔍 useLocalStorageUser - User data changed, updating:', storedUser);
             setUser(storedUser);
         }
-    });
+    }, [user]);
 
     // Listen for storage changes (when user logs in/out in another tab)
     useEffect(() => {

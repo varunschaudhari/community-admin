@@ -1,5 +1,4 @@
 // Dynamic Permission Service - fetches permissions from backend
-import axios from 'axios';
 
 // Types for dynamic permissions
 export interface Permission {
@@ -61,22 +60,30 @@ class PermissionService {
             }
 
             console.log('🔐 Fetching fresh permissions from backend');
-            const response = await axios.get(`${this.baseUrl}/user-permissions`, {
+            const response = await fetch(`${this.baseUrl}/user-permissions`, {
+                method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 },
-                timeout: 5000 // 5 second timeout
+                signal: AbortSignal.timeout(5000) // 5 second timeout
             });
 
-            if (response.data.success) {
-                const userPermissions: UserPermissions = response.data.data;
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const responseData = await response.json();
+
+            if (responseData.success) {
+                const userPermissions: UserPermissions = responseData.data;
 
                 // Update cache
                 this.updateCache(userPermissions);
 
                 return userPermissions;
             } else {
-                throw new Error(response.data.message || 'Failed to fetch permissions');
+                throw new Error(responseData.message || 'Failed to fetch permissions');
             }
         } catch (error) {
             console.error('🔐 Backend permission fetch failed:', error instanceof Error ? error.message : 'Unknown error');
@@ -100,17 +107,25 @@ class PermissionService {
             }
 
             console.log('🔐 Fetching roles from backend');
-            const response = await axios.get(`${this.baseUrl}/roles`, {
+            const response = await fetch(`${this.baseUrl}/roles`, {
+                method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 },
-                timeout: 5000
+                signal: AbortSignal.timeout(5000)
             });
 
-            if (response.data.success) {
-                return response.data.data;
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const responseData = await response.json();
+
+            if (responseData.success) {
+                return responseData.data;
             } else {
-                throw new Error(response.data.message || 'Failed to fetch roles');
+                throw new Error(responseData.message || 'Failed to fetch roles');
             }
         } catch (error) {
             console.error('🔐 Backend roles fetch failed:', error instanceof Error ? error.message : 'Unknown error');

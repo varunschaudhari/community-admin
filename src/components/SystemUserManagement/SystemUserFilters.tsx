@@ -35,13 +35,13 @@ const SystemUserFilters: React.FC<SystemUserFiltersProps> = ({
         setSearchQuery('');
         onFilterChange({
             department: undefined,
-            systemRole: undefined,
+            role: undefined,
             isActive: undefined,
             page: 1,
         });
     };
 
-    const hasActiveFilters = searchParams.department || searchParams.systemRole || searchParams.isActive !== undefined;
+    const hasActiveFilters = searchParams.department || searchParams.role || searchParams.isActive !== undefined;
 
     return (
         <div className="system-user-filters">
@@ -125,8 +125,8 @@ const SystemUserFilters: React.FC<SystemUserFiltersProps> = ({
                             <select
                                 id="roleFilter"
                                 className="form-control"
-                                value={searchParams.systemRole || ''}
-                                onChange={(e) => handleFilterChange('systemRole', e.target.value || undefined)}
+                                value={searchParams.role || ''}
+                                onChange={(e) => handleFilterChange('role', e.target.value || undefined)}
                                 disabled={loading}
                             >
                                 <option value="">All Roles</option>
@@ -195,13 +195,13 @@ const SystemUserFilters: React.FC<SystemUserFiltersProps> = ({
                             </span>
                         )}
 
-                        {searchParams.systemRole && (
+                        {searchParams.role && (
                             <span className="filter-tag">
                                 <i className="fas fa-user-shield"></i>
-                                Role: {roleOptions.find(r => r.value === searchParams.systemRole)?.label}
+                                Role: {roleOptions.find(r => r.value === searchParams.role)?.label}
                                 <button
                                     className="filter-tag-remove"
-                                    onClick={() => handleFilterChange('systemRole', undefined)}
+                                    onClick={() => handleFilterChange('role', undefined)}
                                 >
                                     <i className="fas fa-times"></i>
                                 </button>
@@ -257,11 +257,11 @@ const SystemUserFilters: React.FC<SystemUserFiltersProps> = ({
 
                     <button
                         className="btn btn-outline-warning btn-sm"
-                        onClick={() => onFilterChange({ systemRole: 'System Admin' })}
+                        onClick={() => onFilterChange({ role: 'Super Admin' })}
                         disabled={loading}
                     >
                         <i className="fas fa-crown"></i>
-                        System Admins
+                        Super Admins
                     </button>
 
                     <button

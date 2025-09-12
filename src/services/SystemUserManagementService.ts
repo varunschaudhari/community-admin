@@ -11,9 +11,9 @@ interface SystemUser {
     middleName?: string;
     lastName: string;
     phone: string;
-    systemRole: 'System Admin' | 'System Manager' | 'System Operator' | 'System Viewer';
+    role: 'Super Admin' | 'Admin' | 'Moderator' | 'Member' | 'Guest';
     accessLevel: number;
-    permissions: string[];
+    permissions?: string[];
     twoFactorEnabled: boolean;
     lastPasswordChange: string;
     passwordExpiry: string;
@@ -51,7 +51,7 @@ interface SystemUserStats {
 interface SystemUserSearchParams {
     query?: string;
     department?: string;
-    systemRole?: string;
+    role?: string;
     isActive?: boolean;
     page?: number;
     limit?: number;
@@ -68,9 +68,8 @@ interface CreateSystemUserData {
     middleName?: string;
     lastName: string;
     phone: string;
-    systemRole: string;
+    role: string;
     accessLevel: number;
-    permissions: string[];
 }
 
 interface UpdateSystemUserData {
@@ -80,9 +79,8 @@ interface UpdateSystemUserData {
     middleName?: string;
     lastName?: string;
     phone?: string;
-    systemRole?: string;
+    role?: string;
     accessLevel?: number;
-    permissions?: string[];
     isActive?: boolean;
     verified?: boolean;
 }
@@ -143,7 +141,7 @@ class SystemUserManagementService {
         if (params.page) queryParams.append('page', params.page.toString());
         if (params.limit) queryParams.append('limit', params.limit.toString());
         if (params.department) queryParams.append('department', params.department);
-        if (params.systemRole) queryParams.append('systemRole', params.systemRole);
+        if (params.role) queryParams.append('role', params.role);
         if (params.isActive !== undefined) queryParams.append('isActive', params.isActive.toString());
 
         const queryString = queryParams.toString();
@@ -211,6 +209,13 @@ class SystemUserManagementService {
     async unlockSystemUser(id: string): Promise<{ success: boolean; message: string }> {
         return this.makeRequest<{ success: boolean; message: string }>(`/users/${id}/unlock`, {
             method: 'POST',
+        });
+    }
+
+    // Delete system user
+    async deleteSystemUser(id: string): Promise<{ success: boolean; message: string }> {
+        return this.makeRequest<{ success: boolean; message: string }>(`/users/${id}`, {
+            method: 'DELETE',
         });
     }
 
@@ -285,8 +290,8 @@ class SystemUserManagementService {
     }
 
     // Get current system user permissions
-    async getCurrentUserPermissions(): Promise<{ success: boolean; data: { permissions: string[]; systemRole: string; accessLevel: number; department: string } }> {
-        return this.makeRequest<{ success: boolean; data: { permissions: string[]; systemRole: string; accessLevel: number; department: string } }>('/auth/permissions');
+    async getCurrentUserPermissions(): Promise<{ success: boolean; data: { permissions: string[]; role: string; accessLevel: number; department: string } }> {
+        return this.makeRequest<{ success: boolean; data: { permissions: string[]; role: string; accessLevel: number; department: string } }>('/auth/permissions');
     }
 
     // Get current system user access info
@@ -317,52 +322,14 @@ class SystemUserManagementService {
 
     getSystemRoleOptions(): Array<{ value: string; label: string; accessLevel: number }> {
         return [
-            { value: 'System Admin', label: 'System Administrator', accessLevel: 5 },
-            { value: 'System Manager', label: 'System Manager', accessLevel: 4 },
-            { value: 'System Operator', label: 'System Operator', accessLevel: 3 },
-            { value: 'System Viewer', label: 'System Viewer', accessLevel: 2 },
+            { value: 'Super Admin', label: 'Super Admin', accessLevel: 5 },
+            { value: 'Admin', label: 'Admin', accessLevel: 4 },
+            { value: 'Moderator', label: 'Moderator', accessLevel: 3 },
+            { value: 'Member', label: 'Member', accessLevel: 2 },
+            { value: 'Guest', label: 'Guest', accessLevel: 1 },
         ];
     }
 
-    getPermissionOptions(): Array<{ value: string; label: string; category: string }> {
-        return [
-            // System permissions
-            { value: 'system:read', label: 'Read System Information', category: 'System' },
-            { value: 'system:write', label: 'Modify System Settings', category: 'System' },
-            { value: 'system:delete', label: 'Delete System Data', category: 'System' },
-
-            // User management permissions
-            { value: 'users:manage', label: 'Manage System Users', category: 'User Management' },
-
-            // Database permissions
-            { value: 'database:backup', label: 'Create Database Backups', category: 'Database' },
-            { value: 'database:restore', label: 'Restore Database Backups', category: 'Database' },
-
-            // Logging permissions
-            { value: 'logs:view', label: 'View System Logs', category: 'Logging' },
-            { value: 'logs:export', label: 'Export System Logs', category: 'Logging' },
-
-            // Settings permissions
-            { value: 'settings:system', label: 'Modify System Settings', category: 'Settings' },
-            { value: 'settings:security', label: 'Modify Security Settings', category: 'Settings' },
-
-            // Reporting permissions
-            { value: 'reports:generate', label: 'Generate System Reports', category: 'Reporting' },
-
-            // Maintenance permissions
-            { value: 'maintenance:schedule', label: 'Schedule System Maintenance', category: 'Maintenance' },
-
-            // Backup permissions
-            { value: 'backup:create', label: 'Create System Backups', category: 'Backup' },
-            { value: 'backup:restore', label: 'Restore System Backups', category: 'Backup' },
-
-            // Monitoring permissions
-            { value: 'monitoring:view', label: 'View System Monitoring', category: 'Monitoring' },
-
-            // Alert permissions
-            { value: 'alerts:manage', label: 'Manage System Alerts', category: 'Alerts' },
-        ];
-    }
 
     formatSystemUser(user: SystemUser): SystemUser {
         return {

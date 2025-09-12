@@ -13,6 +13,8 @@ interface SystemUserListProps {
         hasPrev: boolean;
     };
     onEdit: (user: SystemUser) => void;
+    onView: (user: SystemUser) => void;
+    onDelete: (userId: string) => void;
     onToggleStatus: (user: SystemUser) => void;
     onResetPassword: (userId: string, newPassword: string) => void;
     onUnlockAccount: (userId: string) => void;
@@ -24,6 +26,8 @@ const SystemUserList: React.FC<SystemUserListProps> = ({
     loading,
     pagination,
     onEdit,
+    onView,
+    onDelete,
     onToggleStatus,
     onResetPassword,
     onUnlockAccount,
@@ -35,6 +39,14 @@ const SystemUserList: React.FC<SystemUserListProps> = ({
     } | null>(null);
     const [newPassword, setNewPassword] = useState('');
     const [passwordLoading, setPasswordLoading] = useState(false);
+
+    const handleRowClick = (user: SystemUser, event: React.MouseEvent) => {
+        // Don't trigger row click if clicking on action buttons
+        if ((event.target as HTMLElement).closest('.action-buttons')) {
+            return;
+        }
+        onView(user);
+    };
 
     const handleResetPassword = async () => {
         if (!showPasswordModal || !newPassword.trim()) return;
@@ -64,10 +76,11 @@ const SystemUserList: React.FC<SystemUserListProps> = ({
 
     const getRoleBadge = (systemRole: string) => {
         const roleColors: { [key: string]: string } = {
-            'System Admin': 'danger',
-            'System Manager': 'warning',
-            'System Operator': 'info',
-            'System Viewer': 'secondary',
+            'Super Admin': 'danger',
+            'Admin': 'warning',
+            'Moderator': 'info',
+            'Member': 'secondary',
+            'Guest': 'light',
         };
 
         return (
@@ -145,7 +158,12 @@ const SystemUserList: React.FC<SystemUserListProps> = ({
                     </thead>
                     <tbody>
                         {users.map((user) => (
-                            <tr key={user._id} className={!user.isActive ? 'table-secondary' : ''}>
+                            <tr
+                                key={user._id}
+                                className={`${!user.isActive ? 'table-secondary' : ''} clickable-row`}
+                                onClick={(e) => handleRowClick(user, e)}
+                                style={{ cursor: 'pointer' }}
+                            >
                                 <td>
                                     <div className="user-info">
                                         <div className="user-info__avatar">
@@ -164,7 +182,7 @@ const SystemUserList: React.FC<SystemUserListProps> = ({
                                     <code className="employee-id">{user.employeeId}</code>
                                 </td>
                                 <td>{getDepartmentBadge(user.department)}</td>
-                                <td>{getRoleBadge(user.systemRole)}</td>
+                                <td>{getRoleBadge(user.role)}</td>
                                 <td>
                                     <span className="access-level">
                                         Level {user.accessLevel}
@@ -220,6 +238,19 @@ const SystemUserList: React.FC<SystemUserListProps> = ({
                                             title="Reset Password"
                                         >
                                             <i className="fas fa-key"></i>
+                                        </button>
+
+                                        <button
+                                            className="btn btn-sm btn-outline-danger"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (window.confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}? This action cannot be undone.`)) {
+                                                    onDelete(user._id);
+                                                }
+                                            }}
+                                            title="Delete User"
+                                        >
+                                            <i className="fas fa-trash"></i>
                                         </button>
                                     </div>
                                 </td>

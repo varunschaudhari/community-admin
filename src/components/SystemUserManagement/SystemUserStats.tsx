@@ -28,10 +28,11 @@ const SystemUserStats: React.FC<SystemUserStatsProps> = ({ stats, onFilterChange
 
     const getRoleColor = (role: string) => {
         const colors: { [key: string]: string } = {
-            'System Admin': '#dc3545',
-            'System Manager': '#ffc107',
-            'System Operator': '#17a2b8',
-            'System Viewer': '#6c757d',
+            'Super Admin': '#dc3545',
+            'Admin': '#ffc107',
+            'Moderator': '#17a2b8',
+            'Member': '#6c757d',
+            'Guest': '#e9ecef',
         };
         return colors[role] || '#6c757d';
     };
@@ -147,7 +148,7 @@ const SystemUserStats: React.FC<SystemUserStatsProps> = ({ stats, onFilterChange
                             <div
                                 key={role._id}
                                 className="distribution-item"
-                                onClick={() => handleStatClick({ systemRole: role._id })}
+                                onClick={() => handleStatClick({ role: role._id })}
                                 style={{ cursor: 'pointer' }}
                             >
                                 <div className="distribution-item__header">
@@ -206,7 +207,7 @@ const SystemUserStats: React.FC<SystemUserStatsProps> = ({ stats, onFilterChange
 
                     <button
                         className="btn btn-outline-info btn-sm"
-                        onClick={() => handleStatClick({ systemRole: 'System Admin' })}
+                        onClick={() => handleStatClick({ role: 'Super Admin' })}
                         disabled={loading}
                     >
                         <i className="fas fa-crown"></i>
