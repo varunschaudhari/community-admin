@@ -18,7 +18,8 @@ const LoginPage: React.FC = () => {
   const { login, isLoading, error, clearError, setUser } = useAuth();
   const [userType, setUserType] = useState<'community' | 'system'>('community');
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
+    mobile: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +40,7 @@ const LoginPage: React.FC = () => {
       if (userType === 'system') {
         // System user login
         const response = await systemAuthService.login(
-          formData.email,
+          formData.username,
           formData.password
         );
 
@@ -76,9 +77,9 @@ const LoginPage: React.FC = () => {
           throw new Error(response.message || 'System login failed');
         }
       } else {
-        // Community user login
+        // Community user login (using mobile number)
         await login({
-          username: formData.email,
+          username: formData.mobile,
           password: formData.password
         });
       }
@@ -113,20 +114,36 @@ const LoginPage: React.FC = () => {
           <button
             type="button"
             className={`user-type-btn ${userType === 'community' ? 'active' : ''}`}
-            onClick={() => setUserType('community')}
+            onClick={() => {
+              setUserType('community');
+              setFormData(prev => ({ ...prev, username: '', mobile: '' }));
+            }}
           >
-            Community User
+            Community User (Mobile)
           </button>
           <button
             type="button"
             className={`user-type-btn ${userType === 'system' ? 'active' : ''}`}
-            onClick={() => setUserType('system')}
+            onClick={() => {
+              setUserType('system');
+              setFormData(prev => ({ ...prev, username: '', mobile: '' }));
+            }}
           >
-            System User
+            System User (Username)
           </button>
         </div>
 
         <form className="form" onSubmit={handleSubmit}>
+          {userType === 'community' && (
+            <div className="login-info">
+              <p>Enter your mobile number and password to login</p>
+            </div>
+          )}
+          {userType === 'system' && (
+            <div className="login-info">
+              <p>Enter your username and password to login</p>
+            </div>
+          )}
           <div className="form-group">
             <div className="input-wrapper">
               {userType === 'community' ? (
@@ -134,10 +151,10 @@ const LoginPage: React.FC = () => {
                   <PhoneOutlined className="input-icon" />
                   <input
                     type="tel"
-                    name="email"
+                    name="mobile"
                     className="input"
                     placeholder="Mobile number (10 digits)"
-                    value={formData.email}
+                    value={formData.mobile}
                     onChange={handleInputChange}
                     pattern="[0-9]{10}"
                     maxLength={10}
@@ -149,10 +166,10 @@ const LoginPage: React.FC = () => {
                   <UserOutlined className="input-icon" />
                   <input
                     type="text"
-                    name="email"
+                    name="username"
                     className="input"
                     placeholder="Username"
-                    value={formData.email}
+                    value={formData.username}
                     onChange={handleInputChange}
                     required
                   />

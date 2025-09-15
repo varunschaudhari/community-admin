@@ -134,13 +134,13 @@ class UserManagementService {
     try {
       const queryParams = new URLSearchParams();
 
-      if (params.query) queryParams.append('query', params.query);
+      if (params.query) queryParams.append('search', params.query);
       if (params.role) queryParams.append('role', params.role);
-      if (params.verified !== undefined) queryParams.append('verified', params.verified.toString());
+      if (params.verified !== undefined) queryParams.append('isVerified', params.verified.toString());
       if (params.limit) queryParams.append('limit', params.limit.toString());
       if (params.page) queryParams.append('page', params.page.toString());
 
-      const response = await fetch(`${this.API_BASE_URL}/community/users/search?${queryParams}`, {
+      const response = await fetch(`${this.API_BASE_URL}/community/users?${queryParams}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
