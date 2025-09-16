@@ -11,7 +11,9 @@ import Roles from './components/Roles/Roles';
 import SystemUserManagement from './components/SystemUserManagement/SystemUserManagement';
 import { LocalStorageDebugButton } from './components/LocalStorageDebugger/LocalStorageDebugger';
 import PermissionManager from './components/PermissionManager/PermissionManager';
+import { TokenExpiryWarning } from './components/TokenExpiryWarning';
 import { useDynamicPermissions } from './hooks/useDynamicPermissions';
+import './utils/tokenExpiryTest'; // Import test utilities
 
 // Simple localStorage debug utilities
 const debugLocalStorage = () => {
@@ -138,6 +140,7 @@ const AppContent: React.FC = () => {
       <DashboardLayout currentPage={currentPage} onPageChange={setCurrentPage}>
         {renderContent()}
       </DashboardLayout>
+      <TokenExpiryWarning showWarningMinutes={10} />
       <LocalStorageDebugButton />
       <PermissionManager isVisible={showPermissionManager} />
 

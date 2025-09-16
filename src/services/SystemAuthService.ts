@@ -40,6 +40,7 @@ class SystemAuthService {
   private baseUrl = 'http://localhost:5000/api/system';
   private tokenKey = 'systemAuthToken';
   private userKey = 'systemUser';
+  private tokenExpiryKey = 'systemTokenExpiry';
 
   // Login system user
   async login(username: string, password: string): Promise<SystemLoginResponse> {
@@ -58,6 +59,11 @@ class SystemAuthService {
         // Store token and user data
         localStorage.setItem(this.tokenKey, data.data.token);
         localStorage.setItem(this.userKey, JSON.stringify(data.data.user));
+        
+        // Set token expiry time (8 hours for system users)
+        const expiryTime = new Date();
+        expiryTime.setHours(expiryTime.getHours() + 8);
+        localStorage.setItem(this.tokenExpiryKey, expiryTime.toISOString());
       }
 
       return data;
@@ -107,13 +113,64 @@ class SystemAuthService {
   isAuthenticated(): boolean {
     const token = this.getToken();
     const user = this.getCurrentUser();
-    return !!(token && user);
+    const tokenNotExpired = !this.isTokenExpired();
+    return !!(token && user && tokenNotExpired);
+  }
+
+  // Check if system token is expired
+  isTokenExpired(): boolean {
+    const expiry = localStorage.getItem(this.tokenExpiryKey);
+    console.log('🔍 SystemAuthService - isTokenExpired check:');
+    console.log('  Token expiry from localStorage:', expiry);
+    
+    if (!expiry) {
+      console.log('  ❌ No expiry found - token considered expired');
+      return true;
+    }
+
+    const expiryTime = new Date(expiry).getTime();
+    const currentTime = new Date().getTime();
+
+    // Add 5 minute buffer before actual expiration
+    const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+    const isExpired = currentTime >= (expiryTime - bufferTime);
+    
+    console.log('  Expiry time:', new Date(expiryTime).toLocaleString());
+    console.log('  Current time:', new Date(currentTime).toLocaleString());
+    console.log('  Time until expiry:', Math.round((expiryTime - currentTime) / 60000), 'minutes');
+    console.log('  Is expired:', isExpired);
+    
+    return isExpired;
+  }
+
+  // Get token expiry time
+  getTokenExpiry(): Date | null {
+    const expiry = localStorage.getItem(this.tokenExpiryKey);
+    return expiry ? new Date(expiry) : null;
+  }
+
+  // Get time until token expires in milliseconds
+  getTimeUntilExpiry(): number {
+    const expiry = this.getTokenExpiry();
+    if (!expiry) return 0;
+
+    const currentTime = new Date().getTime();
+    const expiryTime = expiry.getTime();
+    return Math.max(0, expiryTime - currentTime);
   }
 
   // Logout system user
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
+    localStorage.removeItem(this.tokenExpiryKey);
+    // Also clear standard auth keys for compatibility
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('tokenExpiry');
+    localStorage.removeItem('systemUserType');
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('userDataUpdated'));
   }
 
   // Validate system token
@@ -121,6 +178,12 @@ class SystemAuthService {
     try {
       const token = this.getToken();
       if (!token) return false;
+
+      // Check token expiration before making request
+      if (this.isTokenExpired()) {
+        this.logout();
+        throw new Error('Session expired. Please login again.');
+      }
 
       const response = await fetch(`${this.baseUrl}/auth/validate`, {
         method: 'GET',
@@ -130,6 +193,14 @@ class SystemAuthService {
       });
 
       const data = await response.json();
+      
+      if (data.success) {
+        // Refresh token expiry time on successful validation
+        const expiryTime = new Date();
+        expiryTime.setHours(expiryTime.getHours() + 8);
+        localStorage.setItem(this.tokenExpiryKey, expiryTime.toISOString());
+      }
+      
       return data.success;
     } catch (error) {
       console.error('Token validation error:', error);
@@ -145,6 +216,12 @@ class SystemAuthService {
         throw new Error('No authentication token found');
       }
 
+      // Check token expiration before making request
+      if (this.isTokenExpired()) {
+        this.logout();
+        throw new Error('Session expired. Please login again.');
+      }
+
       const response = await fetch(`${this.baseUrl}/auth/profile`, {
         method: 'GET',
         headers: {
@@ -152,7 +229,16 @@ class SystemAuthService {
         },
       });
 
-      return await response.json();
+      const result = await response.json();
+      
+      if (result.success) {
+        // Refresh token expiry time on successful profile fetch
+        const expiryTime = new Date();
+        expiryTime.setHours(expiryTime.getHours() + 8);
+        localStorage.setItem(this.tokenExpiryKey, expiryTime.toISOString());
+      }
+      
+      return result;
     } catch (error) {
       console.error('Get profile error:', error);
       throw error;

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, LoginCredentials, RegisterData } from '../services/ApiService';
 import { authService } from '../services/AuthService';
+import { systemAuthService } from '../services/SystemAuthService';
 
 interface AuthContextType {
   user: User | null;
@@ -80,9 +81,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = async () => {
-    await authService.logout();
-    setUser(null);
-    setError(null);
+    try {
+      // Check if it's a system user and use appropriate logout method
+      if (user && user.userType === 'system') {
+        systemAuthService.logout();
+      } else {
+        await authService.logout();
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      setError(null);
+    }
   };
 
   // Check for existing authentication on app load
@@ -103,55 +114,55 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         // For system users, use different authentication logic
         if (storedUser && storedUser.userType === 'system') {
-          // For system users, just check if we have a token (don't check expiry with community logic)
-          if (hasToken) {
+          // For system users, check if token is valid and not expired
+          if (systemAuthService.isAuthenticated()) {
             setUser(storedUser);
             console.log('✅ System user loaded from localStorage:', storedUser.firstName, storedUser.lastName);
           } else {
-            console.warn('⚠️ System user found but no token - clearing storage');
-            authService.clearAuth();
+            console.warn('⚠️ System user found but token expired or invalid - clearing storage');
+            systemAuthService.logout();
             setUser(null);
           }
         } else if (storedUser && hasToken) {
           // For community users, use the full authentication check
-          // Skip authentication check for system users (they have different logic)
-          if (storedUser.userType === 'system') {
-            setUser(storedUser);
-            console.log('✅ System user loaded from localStorage (community path):', storedUser.firstName, storedUser.lastName);
-          } else {
+          if (storedUser.userType !== 'system') {
             const isAuthenticated = authService.isAuthenticated();
             if (isAuthenticated) {
               setUser(storedUser);
               console.log('✅ Community user loaded from localStorage:', storedUser.firstName, storedUser.lastName);
 
-            // Try to validate token in background (don't block the UI)
-            try {
-              const response = await authService.validateToken();
-              if (response.success) {
-                setUser(response.data);
-                console.log('✅ Token validated with backend');
+              // Try to validate token in background (don't block the UI)
+              try {
+                const response = await authService.validateToken();
+                if (response.success) {
+                  setUser(response.data);
+                  console.log('✅ Token validated with backend');
+                }
+              } catch (validationError: unknown) {
+                // Only clear storage if token is actually expired
+                const errorMessage = validationError instanceof Error ? validationError.message : String(validationError);
+                if (errorMessage.includes('Session expired')) {
+                  console.warn('⚠️ Token expired - clearing storage');
+                  authService.clearAuth();
+                  setUser(null);
+                } else {
+                  console.warn('⚠️ Token validation failed, but keeping user logged in from localStorage');
+                }
               }
-            } catch (validationError: unknown) {
-              // Only clear storage if token is actually expired
-              const errorMessage = validationError instanceof Error ? validationError.message : String(validationError);
-              if (errorMessage.includes('Session expired')) {
-                console.warn('⚠️ Token expired - clearing storage');
-                authService.clearAuth();
-                setUser(null);
-              } else {
-                console.warn('⚠️ Token validation failed, but keeping user logged in from localStorage');
-              }
+            } else {
+              console.warn('⚠️ Community user found but token expired - clearing storage');
+              authService.clearAuth();
+              setUser(null);
             }
-          } else {
-            console.warn('⚠️ Community user found but token expired - clearing storage');
-            authService.clearAuth();
-            setUser(null);
-          }
           }
         } else if (storedUser && !hasToken) {
           // We have user data but no valid token - clear user data
           console.warn('⚠️ User data found but no valid token - clearing storage');
-          authService.clearAuth();
+          if (storedUser.userType === 'system') {
+            systemAuthService.logout();
+          } else {
+            authService.clearAuth();
+          }
           setUser(null);
         } else if (!storedUser && hasToken) {
           // We have token but no user data - clear token
@@ -180,38 +191,56 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!user) return; // Only check if user is logged in
 
     const checkTokenExpiry = () => {
-      // Skip token expiry check for system users (they have different expiry logic)
+      let isExpired = false;
+      
       if (user.userType === 'system') {
-        return;
-      }
-
-      if (authService.isTokenExpired()) {
-        console.log('⏰ Token expired - clearing authentication');
-        authService.clearAuth();
-        setUser(null);
-        setError('Session expired. Please login again.');
+        // Check system user token expiry
+        isExpired = systemAuthService.isTokenExpired();
+        if (isExpired) {
+          console.log('⏰ System token expired - clearing authentication');
+          systemAuthService.logout();
+          setUser(null);
+          setError('Session expired. Please login again.');
+        }
+      } else {
+        // Check community user token expiry
+        isExpired = authService.isTokenExpired();
+        if (isExpired) {
+          console.log('⏰ Community token expired - clearing authentication');
+          authService.clearAuth();
+          setUser(null);
+          setError('Session expired. Please login again.');
+        }
       }
     };
 
     // Check every minute
     const interval = setInterval(checkTokenExpiry, 60000);
 
-    // Also check when the token is about to expire (only for community users)
-    if (user.userType !== 'system') {
-      const timeUntilExpiry = authService.getTimeUntilExpiry();
+    // Also check when the token is about to expire
+    let timeout: NodeJS.Timeout | null = null;
+    if (user.userType === 'system') {
+      const timeUntilExpiry = systemAuthService.getTimeUntilExpiry();
       if (timeUntilExpiry > 0) {
-        const timeout = setTimeout(() => {
+        timeout = setTimeout(() => {
           checkTokenExpiry();
         }, timeUntilExpiry);
-
-        return () => {
-          clearInterval(interval);
-          clearTimeout(timeout);
-        };
+      }
+    } else {
+      const timeUntilExpiry = authService.getTimeUntilExpiry();
+      if (timeUntilExpiry > 0) {
+        timeout = setTimeout(() => {
+          checkTokenExpiry();
+        }, timeUntilExpiry);
       }
     }
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
   }, [user]);
 
   const value: AuthContextType = {

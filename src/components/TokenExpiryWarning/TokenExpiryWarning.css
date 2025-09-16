@@ -1,0 +1,109 @@
+.token-status-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #666;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.token-status-indicator .anticon {
+  color: #1890ff;
+}
+
+.token-time {
+  font-weight: 500;
+}
+
+.token-warning {
+  color: #faad14;
+  font-size: 14px;
+}
+
+.token-expiry-modal .modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #faad14;
+}
+
+.token-expiry-modal .warning-icon {
+  font-size: 18px;
+}
+
+.token-expiry-content {
+  padding: 16px 0;
+}
+
+.expiry-alert {
+  margin-bottom: 20px;
+}
+
+.session-progress {
+  margin-bottom: 20px;
+}
+
+.progress-label {
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #666;
+}
+
+.session-details {
+  background: #f5f5f5;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #1890ff;
+}
+
+.session-details p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.session-details strong {
+  color: #333;
+}
+
+/* Dark theme support */
+[data-theme='dark'] .token-status-indicator {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: #434343;
+  color: #fff;
+}
+
+[data-theme='dark'] .session-details {
+  background: #1f1f1f;
+  border-left-color: #1890ff;
+}
+
+[data-theme='dark'] .session-details p {
+  color: #d9d9d9;
+}
+
+[data-theme='dark'] .session-details strong {
+  color: #fff;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .token-status-indicator {
+    top: 10px;
+    right: 10px;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  
+  .token-expiry-modal .ant-modal-body {
+    padding: 16px;
+  }
+}
