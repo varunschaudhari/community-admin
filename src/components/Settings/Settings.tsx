@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLocalStorageUser } from '../../hooks/useLocalStorageUser';
+import { settingsService, UserSettings } from '../../services/SettingsService';
 import { SETTINGS, FORMS, SUCCESS } from '../../constants';
 import {
   SettingOutlined,
@@ -16,65 +17,64 @@ import {
   LockOutlined,
   MailOutlined,
   PhoneOutlined,
+  CheckOutlined,
+  ExclamationCircleOutlined,
+  DownloadOutlined,
+  UploadOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import './Settings.css';
 
 const Settings: React.FC = () => {
   const { theme, isDark, toggleTheme } = useTheme();
   const { user, refreshUser } = useLocalStorageUser();
-  const [settings, setSettings] = useState({
-    profile: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      bio: '',
-    },
-    notifications: {
-      email: true,
-      push: false,
-      sms: true,
-      marketing: false,
-    },
-    security: {
-      twoFactor: true,
-      sessionTimeout: 30,
-      passwordExpiry: 90,
-    },
-    appearance: {
-      theme: isDark ? 'dark' : 'light',
-      language: 'en',
-      timezone: 'UTC',
-    },
+  const [settings, setSettings] = useState<UserSettings>(settingsService.getDefaultSettings());
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false,
   });
 
-  // Load user data into settings when component mounts or user changes
+  // Load settings and user data when component mounts
   useEffect(() => {
-    console.log('🔍 Settings - useEffect triggered, user:', user);
-    if (user) {
-      console.log('🔍 Settings - Loading user data:', user);
-      console.log('🔍 Settings - User firstName:', user.firstName);
-      console.log('🔍 Settings - User lastName:', user.lastName);
-      console.log('🔍 Settings - User email:', user.email);
-      setSettings(prev => ({
-        ...prev,
-        profile: {
-          firstName: user.firstName || '',
-          lastName: user.lastName || '',
-          email: user.email || '',
-          phone: user.phone || '',
-          bio: '', // Bio field not available in user data
-        },
-      }));
-    } else {
-      console.log('🔍 Settings - No user data available');
-    }
-  }, [user]);
+    const loadSettings = () => {
+      const savedSettings = settingsService.getSettings();
+      setSettings(savedSettings);
 
-  // Refresh user data when component mounts
-  useEffect(() => {
+      if (user) {
+        console.log('🔍 Settings - Loading user data:', user);
+        setSettings(prev => ({
+          ...prev,
+          profile: {
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            email: user.email || '',
+            phone: user.phone || '',
+            bio: prev.profile.bio || '',
+          },
+        }));
+      }
+    };
+
+    loadSettings();
     refreshUser();
-  }, [refreshUser]);
+  }, [user, refreshUser]);
+
+  // Clear message after 5 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   const handleInputChange = (section: string, field: string, value: any) => {
     setSettings(prev => ({
@@ -86,9 +86,113 @@ const Settings: React.FC = () => {
     }));
   };
 
-  const handleSave = () => {
-    // Save settings logic here
-    console.log('Settings saved:', settings);
+  const showMessage = (type: 'success' | 'error', text: string) => {
+    setMessage({ type, text });
+  };
+
+  const handleSave = async () => {
+    setIsLoading(true);
+    try {
+      // Save all settings
+      settingsService.saveSettings(settings);
+
+      // Update profile if changed
+      if (user) {
+        await settingsService.updateProfile(settings.profile);
+      }
+
+      // Update appearance settings (theme change)
+      await settingsService.updateAppearanceSettings(settings.appearance);
+
+      // Update notification settings
+      await settingsService.updateNotificationSettings(settings.notifications);
+
+      // Update security settings
+      await settingsService.updateSecuritySettings(settings.security);
+
+      showMessage('success', 'Settings saved successfully!');
+      console.log('✅ Settings saved:', settings);
+    } catch (error) {
+      console.error('❌ Error saving settings:', error);
+      showMessage('error', 'Failed to save settings. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      showMessage('error', 'New passwords do not match');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 6) {
+      showMessage('error', 'New password must be at least 6 characters long');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await settingsService.changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+      showMessage('success', 'Password changed successfully!');
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setShowPasswordForm(false);
+    } catch (error) {
+      console.error('❌ Error changing password:', error);
+      showMessage('error', 'Failed to change password. Please check your current password.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleExportSettings = () => {
+    const settingsJson = settingsService.exportSettings();
+    const blob = new Blob([settingsJson], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'settings.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showMessage('success', 'Settings exported successfully!');
+  };
+
+  const handleImportSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const result = settingsService.importSettings(e.target?.result as string);
+        if (result.success) {
+          setSettings(settingsService.getSettings());
+          showMessage('success', 'Settings imported successfully!');
+        } else {
+          showMessage('error', result.message);
+        }
+      } catch (error) {
+        showMessage('error', 'Invalid settings file');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleResetSettings = () => {
+    if (window.confirm('Are you sure you want to reset all settings to default?')) {
+      settingsService.resetSettings();
+      setSettings(settingsService.getDefaultSettings());
+      showMessage('success', 'Settings reset to default!');
+    }
+  };
+
+  const togglePasswordVisibility = (field: 'current' | 'new' | 'confirm') => {
+    setShowPassword(prev => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
   };
 
   return (
@@ -96,6 +200,14 @@ const Settings: React.FC = () => {
       <div className="settings-header">
         <h1 className="settings-title">{SETTINGS.GENERAL}</h1>
         <p className="settings-subtitle">Manage your account settings and preferences</p>
+
+        {/* Message Display */}
+        {message && (
+          <div className={`message ${message.type}`}>
+            {message.type === 'success' ? <CheckOutlined /> : <ExclamationCircleOutlined />}
+            {message.text}
+          </div>
+        )}
       </div>
 
       {/* Profile Settings */}
@@ -247,6 +359,103 @@ const Settings: React.FC = () => {
               <option value={120}>2 hours</option>
             </select>
           </div>
+
+          {/* Password Change Section */}
+          <div className="security-item">
+            <div className="security-info">
+              <div className="security-title">Change Password</div>
+              <div className="security-description">Update your account password</div>
+            </div>
+            <button
+              className="button button-secondary"
+              onClick={() => setShowPasswordForm(!showPasswordForm)}
+            >
+              <LockOutlined />
+              {showPasswordForm ? 'Cancel' : 'Change Password'}
+            </button>
+          </div>
+
+          {/* Password Change Form */}
+          {showPasswordForm && (
+            <div className="password-form">
+              <div className="form-group">
+                <label className="form-label">Current Password</label>
+                <div className="password-input-wrapper">
+                  <input
+                    type={showPassword.current ? 'text' : 'password'}
+                    className="form-input"
+                    value={passwordForm.currentPassword}
+                    onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                    placeholder="Enter current password"
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => togglePasswordVisibility('current')}
+                  >
+                    {showPassword.current ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                  </button>
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">New Password</label>
+                <div className="password-input-wrapper">
+                  <input
+                    type={showPassword.new ? 'text' : 'password'}
+                    className="form-input"
+                    value={passwordForm.newPassword}
+                    onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                    placeholder="Enter new password"
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => togglePasswordVisibility('new')}
+                  >
+                    {showPassword.new ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                  </button>
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Confirm New Password</label>
+                <div className="password-input-wrapper">
+                  <input
+                    type={showPassword.confirm ? 'text' : 'password'}
+                    className="form-input"
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    placeholder="Confirm new password"
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => togglePasswordVisibility('confirm')}
+                  >
+                    {showPassword.confirm ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                  </button>
+                </div>
+              </div>
+              <div className="form-actions">
+                <button
+                  className="button button-primary"
+                  onClick={handlePasswordChange}
+                  disabled={isLoading}
+                >
+                  <LockOutlined />
+                  {isLoading ? 'Changing...' : 'Change Password'}
+                </button>
+                <button
+                  className="button button-secondary"
+                  onClick={() => {
+                    setShowPasswordForm(false);
+                    setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -294,10 +503,68 @@ const Settings: React.FC = () => {
         </div>
       </div>
 
+      {/* Settings Management */}
+      <div className="settings-section">
+        <div className="section-header">
+          <div className="section-icon" style={{ '--section-color': theme.colors.accent } as React.CSSProperties}>
+            <SettingOutlined />
+          </div>
+          <h3 className="section-title">Settings Management</h3>
+        </div>
+        <div className="section-body">
+          <div className="settings-management">
+            <div className="management-item">
+              <div className="management-info">
+                <div className="management-title">Export Settings</div>
+                <div className="management-description">Download your settings as a JSON file</div>
+              </div>
+              <button className="button button-secondary" onClick={handleExportSettings}>
+                <DownloadOutlined />
+                Export
+              </button>
+            </div>
+
+            <div className="management-item">
+              <div className="management-info">
+                <div className="management-title">Import Settings</div>
+                <div className="management-description">Upload a settings JSON file</div>
+              </div>
+              <div className="file-upload">
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleImportSettings}
+                  id="import-settings"
+                />
+                <label htmlFor="import-settings" className="file-upload-label">
+                  <UploadOutlined />
+                  Import
+                </label>
+              </div>
+            </div>
+
+            <div className="management-item">
+              <div className="management-info">
+                <div className="management-title">Reset Settings</div>
+                <div className="management-description">Reset all settings to default values</div>
+              </div>
+              <button className="button button-danger" onClick={handleResetSettings}>
+                <ReloadOutlined />
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Save Button */}
-      <button className="save-button" onClick={handleSave}>
+      <button
+        className="save-button"
+        onClick={handleSave}
+        disabled={isLoading}
+      >
         <SaveOutlined />
-        {FORMS.SAVE}
+        {isLoading ? 'Saving...' : FORMS.SAVE}
       </button>
     </div>
   );

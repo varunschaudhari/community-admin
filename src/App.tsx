@@ -9,7 +9,6 @@ import User from './components/User';
 import UserManagement from './components/UserManagement/UserManagement';
 import Roles from './components/Roles/Roles';
 import SystemUserManagement from './components/SystemUserManagement/SystemUserManagement';
-import { LocalStorageDebugButton } from './components/LocalStorageDebugger/LocalStorageDebugger';
 import PermissionManager from './components/PermissionManager/PermissionManager';
 import { useDynamicPermissions } from './hooks/useDynamicPermissions';
 
@@ -138,31 +137,7 @@ const AppContent: React.FC = () => {
       <DashboardLayout currentPage={currentPage} onPageChange={setCurrentPage}>
         {renderContent()}
       </DashboardLayout>
-      <LocalStorageDebugButton />
       <PermissionManager isVisible={showPermissionManager} />
-
-      {/* Permission Manager Toggle Button */}
-      <button
-        onClick={() => setShowPermissionManager(!showPermissionManager)}
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          background: '#28a745',
-          color: 'white',
-          border: 'none',
-          borderRadius: '50%',
-          width: '60px',
-          height: '60px',
-          fontSize: '24px',
-          cursor: 'pointer',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
-          zIndex: 9999
-        }}
-        title="Permission Manager"
-      >
-        🔧
-      </button>
     </ThemeProvider>
   );
 };
