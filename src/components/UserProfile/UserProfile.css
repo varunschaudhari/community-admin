@@ -1,0 +1,294 @@
+.user-profile {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.user-profile-header {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.user-profile .ant-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-profile .ant-tabs {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-profile .ant-descriptions-item-label {
+  font-weight: 600;
+  color: var(--color-text-primary, #262626);
+}
+
+.user-profile .ant-descriptions-item-content {
+  color: var(--color-text-secondary, #595959);
+}
+
+.user-profile .ant-table-thead>tr>th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.user-profile .ant-statistic-title {
+  color: var(--color-text-tertiary, #8c8c8c);
+  font-size: 14px;
+}
+
+.user-profile .ant-statistic-content {
+  color: var(--color-text-primary, #262626);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.user-profile .ant-tag {
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.user-profile .ant-avatar {
+  background: #1890ff;
+}
+
+.user-profile .ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.user-profile .ant-btn-primary {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.user-profile .ant-btn-primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+}
+
+.user-profile .ant-modal-header {
+  border-radius: 8px 8px 0 0;
+}
+
+.user-profile .ant-modal-body {
+  padding: 24px;
+}
+
+.user-profile .ant-form-item-label>label {
+  font-weight: 600;
+  color: #262626;
+}
+
+.user-profile .ant-input,
+.user-profile .ant-input-password {
+  border-radius: 6px;
+}
+
+.user-profile .ant-input:focus,
+.user-profile .ant-input-password:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.user-profile .ant-select-selector {
+  border-radius: 6px;
+}
+
+.user-profile .ant-select-focused .ant-select-selector {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.user-profile .ant-divider {
+  margin: 16px 0;
+}
+
+.user-profile .ant-space {
+  width: 100%;
+}
+
+.user-profile .ant-space-item {
+  display: flex;
+  align-items: center;
+}
+
+.user-profile .ant-typography h3 {
+  color: var(--color-text-primary, #262626);
+  margin-bottom: 4px;
+}
+
+.user-profile .ant-typography h4 {
+  color: var(--color-text-primary, #262626);
+  margin-bottom: 8px;
+}
+
+.user-profile .ant-typography h5 {
+  color: var(--color-text-primary, #262626);
+  margin-bottom: 8px;
+}
+
+.user-profile .ant-typography p {
+  color: var(--color-text-secondary, #595959);
+  margin-bottom: 8px;
+}
+
+.user-profile .ant-card-head-title {
+  font-weight: 600;
+  color: var(--color-text-primary, #262626);
+}
+
+.user-profile .ant-card-body {
+  padding: 16px;
+}
+
+.user-profile .ant-table {
+  border-radius: 6px;
+}
+
+.user-profile .ant-table-tbody>tr:hover>td {
+  background: #f5f5f5;
+}
+
+.user-profile .ant-table-tbody>tr>td {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.user-profile .ant-tabs-tab {
+  font-weight: 500;
+  color: #595959;
+}
+
+.user-profile .ant-tabs-tab-active {
+  color: #1890ff;
+}
+
+.user-profile .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #1890ff;
+}
+
+.user-profile .ant-tabs-ink-bar {
+  background: #1890ff;
+}
+
+.user-profile .ant-modal {
+  border-radius: 8px;
+}
+
+.user-profile .ant-modal-content {
+  border-radius: 8px;
+}
+
+.user-profile .ant-modal-header {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.user-profile .ant-modal-footer {
+  border-top: 1px solid #f0f0f0;
+}
+
+.user-profile .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.user-profile .ant-form-item-explain-error {
+  color: #ff4d4f;
+  font-size: 12px;
+}
+
+.user-profile .ant-form-item-has-error .ant-input,
+.user-profile .ant-form-item-has-error .ant-input-password {
+  border-color: #ff4d4f;
+}
+
+.user-profile .ant-form-item-has-error .ant-input:focus,
+.user-profile .ant-form-item-has-error .ant-input-password:focus {
+  border-color: #ff4d4f;
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+}
+
+.user-profile .ant-message {
+  z-index: 9999;
+}
+
+.user-profile .ant-message-success {
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  color: #52c41a;
+}
+
+.user-profile .ant-message-error {
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #ff4d4f;
+}
+
+.user-profile .ant-message-warning {
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  color: #faad14;
+}
+
+.user-profile .ant-message-info {
+  background: #e6f7ff;
+  border: 1px solid #91d5ff;
+  color: #1890ff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .user-profile {
+    padding: 16px;
+  }
+
+  .user-profile-header {
+    padding: 16px;
+  }
+
+  .user-profile .ant-col {
+    margin-bottom: 16px;
+  }
+
+  .user-profile .ant-space {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .user-profile .ant-btn {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .user-profile {
+    padding: 8px;
+  }
+
+  .user-profile-header {
+    padding: 12px;
+  }
+
+  .user-profile .ant-tabs {
+    padding: 8px;
+  }
+
+  .user-profile .ant-card-body {
+    padding: 12px;
+  }
+
+  .user-profile .ant-modal {
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .user-profile .ant-modal-body {
+    padding: 16px;
+  }
+}

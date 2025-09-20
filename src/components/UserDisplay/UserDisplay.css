@@ -43,7 +43,7 @@
 
 .user-name {
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-primary, #333);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -61,8 +61,8 @@
 }
 
 .role-badge {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--color-primary, #007bff);
+  color: var(--color-text-inverse, white);
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 11px;
@@ -72,7 +72,7 @@
 
 .user-email {
   font-size: 12px;
-  color: #6c757d;
+  color: var(--color-text-secondary, #6c757d);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -80,7 +80,7 @@
 
 .user-username {
   font-size: 12px;
-  color: #007bff;
+  color: var(--color-primary, #007bff);
   font-weight: 500;
 }
 
@@ -117,20 +117,20 @@
 /* Simple user name components */
 .user-name-loading,
 .user-first-name-loading {
-  color: #6c757d;
+  color: var(--color-text-secondary, #6c757d);
   font-style: italic;
 }
 
 .user-name-not-logged-in,
 .user-first-name-not-logged-in {
-  color: #6c757d;
+  color: var(--color-text-secondary, #6c757d);
   font-style: italic;
 }
 
 .user-name,
 .user-first-name {
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-primary, #333);
 }
 
 /* Responsive design */
@@ -168,15 +168,15 @@
 
   .user-name,
   .user-first-name {
-    color: #e9ecef;
+    color: var(--color-text-primary, #e9ecef);
   }
 
   .user-email {
-    color: #adb5bd;
+    color: var(--color-text-secondary, #adb5bd);
   }
 
   .user-display.not-logged-in {
-    color: #adb5bd;
+    color: var(--color-text-secondary, #adb5bd);
   }
 
   .skeleton {

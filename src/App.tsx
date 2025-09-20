@@ -10,6 +10,9 @@ import UserManagement from './components/UserManagement/UserManagement';
 import Roles from './components/Roles/Roles';
 import SystemUserManagement from './components/SystemUserManagement/SystemUserManagement';
 import PermissionManager from './components/PermissionManager/PermissionManager';
+import { UserProfile } from './components/UserProfile';
+import { Events } from './components/Events';
+import FamilyTree from './components/FamilyTree/FamilyTree';
 import { useDynamicPermissions } from './hooks/useDynamicPermissions';
 
 // Simple localStorage debug utilities
@@ -69,7 +72,7 @@ if (typeof window !== 'undefined') {
 }
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [showPermissionManager, setShowPermissionManager] = useState(false);
   const { canAccessResource, isLoading: permissionsLoading } = useDynamicPermissions();
@@ -103,6 +106,12 @@ const AppContent: React.FC = () => {
         return <Roles />;
       case 'system-users':
         return <SystemUserManagement />;
+      case 'events':
+        return <Events />;
+      case 'user-profile':
+        return <UserProfile userId={user?._id || ''} />;
+      case 'family-tree':
+        return <FamilyTree />;
       default:
         return <Dashboard />;
     }

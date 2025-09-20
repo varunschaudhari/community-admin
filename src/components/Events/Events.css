@@ -1,0 +1,223 @@
+.events-page {
+    padding: 24px;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+}
+
+.events-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 24px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content h1 {
+    margin: 0;
+    color: #1890ff;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.header-content p {
+    margin: 8px 0 0 0;
+    color: #666;
+    font-size: 16px;
+}
+
+.stats-section {
+    margin-bottom: 24px;
+}
+
+.stats-section .ant-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.events-table {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.event-info {
+    padding: 8px 0;
+}
+
+.event-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: #262626;
+    margin-bottom: 4px;
+}
+
+.event-description {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.event-meta {
+    margin-top: 8px;
+}
+
+.datetime-info {
+    color: #666;
+    font-size: 14px;
+}
+
+.datetime-info>div {
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.attendees-list {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.organizer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.organizer-info .ant-avatar {
+    flex-shrink: 0;
+}
+
+.organizer-info>div>div:first-child {
+    font-weight: 500;
+    color: #262626;
+}
+
+.organizer-email {
+    font-size: 12px;
+    color: #999;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .events-page {
+        padding: 16px;
+    }
+
+    .events-header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+
+    .header-content h1 {
+        font-size: 24px;
+    }
+
+    .stats-section .ant-col {
+        margin-bottom: 16px;
+    }
+
+    .events-table .ant-table {
+        font-size: 14px;
+    }
+
+    .event-title {
+        font-size: 14px;
+    }
+
+    .event-description {
+        font-size: 12px;
+    }
+}
+
+/* Dark theme support */
+[data-theme='dark'] .events-page {
+    background-color: #141414;
+}
+
+[data-theme='dark'] .events-header,
+[data-theme='dark'] .stats-section .ant-card,
+[data-theme='dark'] .events-table {
+    background-color: #1f1f1f;
+    border-color: #303030;
+}
+
+[data-theme='dark'] .header-content h1 {
+    color: #1890ff;
+}
+
+[data-theme='dark'] .header-content p {
+    color: #a6a6a6;
+}
+
+[data-theme='dark'] .event-title {
+    color: #f0f0f0;
+}
+
+[data-theme='dark'] .event-description,
+[data-theme='dark'] .datetime-info {
+    color: #a6a6a6;
+}
+
+[data-theme='dark'] .organizer-info>div>div:first-child {
+    color: #f0f0f0;
+}
+
+[data-theme='dark'] .organizer-email {
+    color: #737373;
+}
+
+/* Animation for smooth transitions */
+.events-page * {
+    transition: all 0.3s ease;
+}
+
+/* Custom scrollbar for tables */
+.events-table .ant-table-body::-webkit-scrollbar {
+    height: 8px;
+}
+
+.events-table .ant-table-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.events-table .ant-table-body::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.events-table .ant-table-body::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Hover effects */
+.events-table .ant-table-tbody>tr:hover>td {
+    background-color: #f5f5f5 !important;
+}
+
+[data-theme='dark'] .events-table .ant-table-tbody>tr:hover>td {
+    background-color: #262626 !important;
+}
+
+/* Button hover effects */
+.events-header .ant-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+/* Card hover effects */
+.stats-section .ant-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme='dark'] .stats-section .ant-card:hover {
+    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1);
+}

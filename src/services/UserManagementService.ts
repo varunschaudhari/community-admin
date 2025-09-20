@@ -1,5 +1,15 @@
 import { authService } from './AuthService';
 
+interface Role {
+  _id: string;
+  name: string;
+  description: string;
+  permissions: string[];
+  isActive: boolean;
+  isSystem?: boolean;
+  isDefault?: boolean;
+}
+
 interface User {
   _id: string;
   username: string;
@@ -10,7 +20,7 @@ interface User {
   phone: string;
   pan?: string;
   adhar?: string;
-  maritalStatus: 'Single' | 'Married' | 'Divorced' | 'Widowed';
+  maritalStatus: 'single' | 'married' | 'divorced' | 'widowed' | 'separated';
   dateOfBirth: string;
   dateOfMarriage?: string;
   kul?: string;
@@ -18,7 +28,7 @@ interface User {
   fatherName?: string;
   motherName?: string;
   childrenName?: string;
-  role: 'Super Admin' | 'Admin' | 'Member' | 'Moderator' | 'Guest';
+  role: string | Role; // Can be role name (string) or populated role object
   roleId?: string;
   verified: boolean;
   isActive: boolean;
@@ -28,6 +38,33 @@ interface User {
   // Virtual fields
   fullName?: string;
   displayName?: string;
+  // New fields
+  fatherDetails?: {
+    fatherName?: string;
+    relationshipType?: string;
+    isAlive?: boolean;
+  };
+  motherDetails?: {
+    motherName?: string;
+    relationshipType?: string;
+    isAlive?: boolean;
+  };
+  marriages?: Array<{
+    spouseName?: string;
+    spouseId?: string;
+    marriageDate?: string;
+    marriageType?: string;
+    marriagePlace?: {
+      city?: string;
+      state?: string;
+      country?: string;
+    };
+  }>;
+  children?: Array<{
+    name?: string;
+    dateOfBirth?: string;
+    gender?: string;
+  }>;
 }
 
 interface UserStats {
@@ -258,7 +295,59 @@ class UserManagementService {
       throw error;
     }
   }
+
+  /**
+   * Get all available roles
+   */
+  async getAllRoles(): Promise<ApiResponse<Role[]>> {
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/roles`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      return await this.handleResponse<Role[]>(response);
+    } catch (error) {
+      console.error('Get all roles error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user
+   */
+  async updateUser(userId: string, userData: Partial<User>): Promise<ApiResponse<User>> {
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/${userId}`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(userData),
+      });
+
+      return await this.handleResponse<User>(response);
+    } catch (error) {
+      console.error('Update user error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verify user
+   */
+  async verifyUser(userId: string): Promise<ApiResponse<User>> {
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/community/users/${userId}/verify`, {
+        method: 'PATCH',
+        headers: this.getAuthHeaders(),
+      });
+
+      return await this.handleResponse<User>(response);
+    } catch (error) {
+      console.error('Verify user error:', error);
+      throw error;
+    }
+  }
 }
 
 export const userManagementService = new UserManagementService();
-export type { User, UserStats, SearchParams, PaginationInfo, ApiResponse };
+export type { User, Role, UserStats, SearchParams, PaginationInfo, ApiResponse };

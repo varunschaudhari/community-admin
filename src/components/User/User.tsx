@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { FORMS, ERRORS, SUCCESS, MARITAL_STATUS } from '../../constants';
+import { FORMS, ERRORS, SUCCESS, MARITAL_STATUS, ROLES } from '../../constants';
 import { userService } from '../../services/UserService';
 import { roleService } from '../../services/RoleService';
 import {
@@ -12,36 +12,80 @@ import {
   CalendarOutlined,
   TeamOutlined,
   HomeOutlined,
-  HeartOutlined,
   UserAddOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   LoadingOutlined,
   EyeInvisibleOutlined,
   EyeTwoTone,
-  SearchOutlined,
   DownOutlined,
 } from '@ant-design/icons';
 import './User.css';
 
 interface FormData {
+  // Basic Information
   firstName: string;
   middleName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
   password: string;
+  dobAsPerDocument: string;
+
+  // Identity Documents
   pan: string;
   adhar: string;
+
+  // Role and Status
+  role: string;
   maritalStatus: string;
-  dateOfBirth: string;
-  roles: string;
+
+  // Cultural Information
   kul: string;
   gotra: string;
-  fatherName: string;
-  motherName: string;
-  childrenName: string;
-  dateOfMarriage: string;
+
+  // Family Information
+  fatherDetails: {
+    fatherName: string;
+    fatherId?: string;
+    relationshipType: string;
+    isAlive: boolean;
+    dateOfDeath?: string;
+  };
+  motherDetails: {
+    motherName: string;
+    motherId?: string;
+    relationshipType: string;
+    isAlive: boolean;
+    dateOfDeath?: string;
+  };
+
+  // Marriage Information
+  marriages: Array<{
+    spouseName: string;
+    spouseId?: string;
+    marriageDate: string;
+    marriagePlace: {
+      city: string;
+      state: string;
+      country: string;
+    };
+    marriageOrder: number;
+    marriageStatus: string;
+    marriageType: string;
+    isCurrentSpouse: boolean;
+  }>;
+
+  // Children Information
+  children: Array<{
+    childName: string;
+    childId?: string;
+    relationshipType: string;
+    birthDate: string;
+    fromWhichMarriage: number;
+    otherParentName?: string;
+    otherParentId?: string;
+  }>;
 }
 
 interface ValidationErrors {
@@ -49,19 +93,18 @@ interface ValidationErrors {
   middleName?: string;
   lastName?: string;
   email?: string;
-  phone?: string;
+  phoneNumber?: string;
   password?: string;
   pan?: string;
   adhar?: string;
   maritalStatus?: string;
-  dateOfBirth?: string;
-  roles?: string;
+  dobAsPerDocument?: string;
+  role?: string;
   kul?: string;
   gotra?: string;
   fatherName?: string;
   motherName?: string;
-  childrenName?: string;
-  dateOfMarriage?: string;
+  marriageDate?: string;
 }
 
 interface ValidationState {
@@ -69,19 +112,18 @@ interface ValidationState {
   middleName: 'neutral' | 'valid' | 'invalid';
   lastName: 'neutral' | 'valid' | 'invalid';
   email: 'neutral' | 'valid' | 'invalid';
-  phone: 'neutral' | 'valid' | 'invalid';
+  phoneNumber: 'neutral' | 'valid' | 'invalid';
   password: 'neutral' | 'valid' | 'invalid';
   pan: 'neutral' | 'valid' | 'invalid';
   adhar: 'neutral' | 'valid' | 'invalid';
   maritalStatus: 'neutral' | 'valid' | 'invalid';
-  dateOfBirth: 'neutral' | 'valid' | 'invalid';
-  roles: 'neutral' | 'valid' | 'invalid';
+  dobAsPerDocument: 'neutral' | 'valid' | 'invalid';
+  role: 'neutral' | 'valid' | 'invalid';
   kul: 'neutral' | 'valid' | 'invalid';
   gotra: 'neutral' | 'valid' | 'invalid';
   fatherName: 'neutral' | 'valid' | 'invalid';
   motherName: 'neutral' | 'valid' | 'invalid';
-  childrenName: 'neutral' | 'valid' | 'invalid';
-  dateOfMarriage: 'neutral' | 'valid' | 'invalid';
+  marriageDate: 'neutral' | 'valid' | 'invalid';
 }
 
 interface AutocompleteOption {
@@ -106,23 +148,44 @@ const User: React.FC = () => {
   const { theme } = useTheme();
   const [roles, setRoles] = useState<Role[]>([]);
   const [formData, setFormData] = useState<FormData>({
+    // Basic Information
     firstName: '',
     middleName: '',
     lastName: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
     password: '',
+    dobAsPerDocument: '',
+
+    // Identity Documents
     pan: '',
     adhar: '',
-    maritalStatus: '',
-    dateOfBirth: '',
-    roles: '',
+
+    // Role and Status
+    role: ROLES.MEMBER, // Set Member as default role
+    maritalStatus: MARITAL_STATUS.SINGLE,
+
+    // Cultural Information
     kul: '',
     gotra: '',
-    fatherName: '',
-    motherName: '',
-    childrenName: '',
-    dateOfMarriage: '',
+
+    // Family Information
+    fatherDetails: {
+      fatherName: '',
+      relationshipType: 'biological',
+      isAlive: true,
+    },
+    motherDetails: {
+      motherName: '',
+      relationshipType: 'biological',
+      isAlive: true,
+    },
+
+    // Marriage Information
+    marriages: [],
+
+    // Children Information
+    children: [],
   });
 
   // Fetch roles from database
@@ -147,19 +210,18 @@ const User: React.FC = () => {
     middleName: 'neutral',
     lastName: 'neutral',
     email: 'neutral',
-    phone: 'neutral',
+    phoneNumber: 'neutral',
     password: 'neutral',
     pan: 'neutral',
     adhar: 'neutral',
     maritalStatus: 'neutral',
-    dateOfBirth: 'neutral',
-    roles: 'neutral',
+    dobAsPerDocument: 'neutral',
+    role: 'valid', // Member is default, so it's valid
     kul: 'neutral',
     gotra: 'neutral',
     fatherName: 'neutral',
     motherName: 'neutral',
-    childrenName: 'neutral',
-    dateOfMarriage: 'neutral',
+    marriageDate: 'neutral',
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -188,8 +250,8 @@ const User: React.FC = () => {
   }, [formData.email]);
 
   useEffect(() => {
-    validateField('phone', formData.phone);
-  }, [formData.phone]);
+    validateField('phoneNumber', formData.phoneNumber);
+  }, [formData.phoneNumber]);
 
   useEffect(() => {
     validateField('password', formData.password);
@@ -204,16 +266,19 @@ const User: React.FC = () => {
   }, [formData.adhar]);
 
   useEffect(() => {
-    validateField('dateOfBirth', formData.dateOfBirth);
-  }, [formData.dateOfBirth]);
+    validateField('dobAsPerDocument', formData.dobAsPerDocument);
+  }, [formData.dobAsPerDocument]);
+
 
   useEffect(() => {
-    validateField('dateOfMarriage', formData.dateOfMarriage);
-  }, [formData.dateOfMarriage]);
+    validateField('role', formData.role);
+  }, [formData.role]);
 
   useEffect(() => {
-    validateField('roles', formData.roles);
-  }, [formData.roles]);
+    if (formData.maritalStatus === MARITAL_STATUS.MARRIED) {
+      validateMarriageDate(formData.marriages[0]?.marriageDate || '');
+    }
+  }, [formData.marriages, formData.maritalStatus]);
 
   const validateField = (field: keyof FormData, value: string | string[]) => {
     const newErrors = { ...errors };
@@ -259,16 +324,16 @@ const User: React.FC = () => {
         }
         break;
 
-      case 'phone':
+      case 'phoneNumber':
         if (!value || typeof value === 'string' && !value.trim()) {
-          newErrors.phone = ERRORS.REQUIRED_FIELD;
-          newValidationState.phone = 'invalid';
+          newErrors.phoneNumber = ERRORS.REQUIRED_FIELD;
+          newValidationState.phoneNumber = 'invalid';
         } else if (typeof value === 'string' && !/^[6-9]\d{9}$/.test(value.replace(/\D/g, ''))) {
-          newErrors.phone = ERRORS.INVALID_PHONE;
-          newValidationState.phone = 'invalid';
+          newErrors.phoneNumber = ERRORS.INVALID_PHONE;
+          newValidationState.phoneNumber = 'invalid';
         } else {
-          delete newErrors.phone;
-          newValidationState.phone = 'valid';
+          delete newErrors.phoneNumber;
+          newValidationState.phoneNumber = 'valid';
         }
         break;
 
@@ -305,55 +370,72 @@ const User: React.FC = () => {
         }
         break;
 
-      case 'dateOfBirth':
+      case 'dobAsPerDocument':
         if (value && typeof value === 'string' && value.trim()) {
           const date = new Date(value);
           const today = new Date();
           if (isNaN(date.getTime())) {
-            newErrors.dateOfBirth = ERRORS.INVALID_DATE;
-            newValidationState.dateOfBirth = 'invalid';
+            newErrors.dobAsPerDocument = ERRORS.INVALID_DATE;
+            newValidationState.dobAsPerDocument = 'invalid';
           } else if (date > today) {
-            newErrors.dateOfBirth = ERRORS.FUTURE_DATE_NOT_ALLOWED;
-            newValidationState.dateOfBirth = 'invalid';
+            newErrors.dobAsPerDocument = ERRORS.FUTURE_DATE_NOT_ALLOWED;
+            newValidationState.dobAsPerDocument = 'invalid';
           } else {
-            delete newErrors.dateOfBirth;
-            newValidationState.dateOfBirth = 'valid';
+            delete newErrors.dobAsPerDocument;
+            newValidationState.dobAsPerDocument = 'valid';
           }
         } else {
-          delete newErrors.dateOfBirth;
-          newValidationState.dateOfBirth = 'neutral';
+          delete newErrors.dobAsPerDocument;
+          newValidationState.dobAsPerDocument = 'neutral';
         }
         break;
 
-      case 'dateOfMarriage':
-        if (value && typeof value === 'string' && value.trim()) {
-          const date = new Date(value);
-          const today = new Date();
-          if (isNaN(date.getTime())) {
-            newErrors.dateOfMarriage = ERRORS.INVALID_DATE;
-            newValidationState.dateOfMarriage = 'invalid';
-          } else if (date > today) {
-            newErrors.dateOfMarriage = ERRORS.FUTURE_DATE_NOT_ALLOWED;
-            newValidationState.dateOfMarriage = 'invalid';
-          } else {
-            delete newErrors.dateOfMarriage;
-            newValidationState.dateOfMarriage = 'valid';
-          }
-        } else {
-          delete newErrors.dateOfMarriage;
-          newValidationState.dateOfMarriage = 'neutral';
-        }
-        break;
 
-      case 'roles':
+      case 'role':
         if (!value || typeof value === 'string' && !value.trim()) {
-          newErrors.roles = ERRORS.REQUIRED_FIELD;
-          newValidationState.roles = 'invalid';
+          newErrors.role = ERRORS.REQUIRED_FIELD;
+          newValidationState.role = 'invalid';
+        } else if (typeof value === 'string' && value === 'Member') {
+          // Member is the default role, so it's always valid
+          delete newErrors.role;
+          newValidationState.role = 'valid';
         } else {
-          delete newErrors.roles;
-          newValidationState.roles = 'valid';
+          delete newErrors.role;
+          newValidationState.role = 'valid';
         }
         break;
+
+    }
+
+    setErrors(newErrors);
+    setValidationState(newValidationState);
+  };
+
+  const validateMarriageDate = (value: string) => {
+    const newErrors = { ...errors };
+    const newValidationState = { ...validationState };
+
+    if (formData.maritalStatus === MARITAL_STATUS.MARRIED) {
+      if (!value || !value.trim()) {
+        newErrors.marriageDate = 'Marriage date is required when marital status is married';
+        newValidationState.marriageDate = 'invalid';
+      } else if (value.trim()) {
+        const date = new Date(value);
+        const today = new Date();
+        if (isNaN(date.getTime())) {
+          newErrors.marriageDate = ERRORS.INVALID_DATE;
+          newValidationState.marriageDate = 'invalid';
+        } else if (date > today) {
+          newErrors.marriageDate = ERRORS.FUTURE_DATE_NOT_ALLOWED;
+          newValidationState.marriageDate = 'invalid';
+        } else {
+          delete newErrors.marriageDate;
+          newValidationState.marriageDate = 'valid';
+        }
+      }
+    } else {
+      delete newErrors.marriageDate;
+      newValidationState.marriageDate = 'neutral';
     }
 
     setErrors(newErrors);
@@ -362,6 +444,35 @@ const User: React.FC = () => {
 
   const handleInputChange = (field: keyof FormData, value: string | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+
+    // Clear submit message when user starts typing
+    if (submitMessage) {
+      setSubmitMessage(null);
+    }
+  };
+
+  const handleFamilyInputChange = (field: 'fatherName' | 'motherName', value: string) => {
+    setFormData(prev => {
+      if (field === 'fatherName') {
+        return {
+          ...prev,
+          fatherDetails: {
+            ...prev.fatherDetails,
+            fatherName: value
+          }
+        };
+      }
+      if (field === 'motherName') {
+        return {
+          ...prev,
+          motherDetails: {
+            ...prev.motherDetails,
+            motherName: value
+          }
+        };
+      }
+      return prev;
+    });
 
     // Clear submit message when user starts typing
     if (submitMessage) {
@@ -403,13 +514,29 @@ const User: React.FC = () => {
     setSearchTimeout(timeout);
   }, [handleAutocompleteSearch, searchTimeout]);
 
-  const handleAutocompleteInputChange = (field: keyof FormData, value: string) => {
-    handleInputChange(field, value);
+  const handleAutocompleteInputChange = (field: string, value: string) => {
+    // Map the field names to the correct FormData keys
+    if (field === 'fatherName') {
+      handleFamilyInputChange('fatherName', value);
+    } else if (field === 'motherName') {
+      handleFamilyInputChange('motherName', value);
+    } else if (field === 'childrenName') {
+      // For now, we'll handle children differently since it's an array
+      // This will be updated when we implement the children management
+      console.log('Children management not yet implemented');
+    }
     debouncedSearch(field, value);
   };
 
-  const handleAutocompleteSelect = (field: keyof FormData, option: AutocompleteOption) => {
-    handleInputChange(field, option.name);
+  const handleAutocompleteSelect = (field: string, option: AutocompleteOption) => {
+    if (field === 'fatherName') {
+      handleFamilyInputChange('fatherName', option.name);
+    } else if (field === 'motherName') {
+      handleFamilyInputChange('motherName', option.name);
+    } else if (field === 'childrenName') {
+      // For now, we'll handle children differently since it's an array
+      console.log('Children management not yet implemented');
+    }
     setShowAutocomplete(prev => ({ ...prev, [field]: false }));
     setAutocompleteOptions([]);
   };
@@ -418,15 +545,43 @@ const User: React.FC = () => {
     e.preventDefault();
 
     // Validate all required fields
-    const requiredFields: (keyof FormData)[] = ['firstName', 'lastName', 'email', 'phone', 'password', 'maritalStatus', 'dateOfBirth', 'roles'];
     const newErrors: ValidationErrors = {};
 
-    requiredFields.forEach(field => {
-      const value = formData[field];
-      if (!value || (typeof value === 'string' && !value.trim())) {
-        newErrors[field] = ERRORS.REQUIRED_FIELD;
+    // Validate basic string fields
+    if (!formData.firstName || !formData.firstName.trim()) {
+      newErrors.firstName = ERRORS.REQUIRED_FIELD;
+    }
+    if (!formData.lastName || !formData.lastName.trim()) {
+      newErrors.lastName = ERRORS.REQUIRED_FIELD;
+    }
+    if (!formData.email || !formData.email.trim()) {
+      newErrors.email = ERRORS.REQUIRED_FIELD;
+    }
+    if (!formData.phoneNumber || !formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = ERRORS.REQUIRED_FIELD;
+    }
+    if (!formData.password || !formData.password.trim()) {
+      newErrors.password = ERRORS.REQUIRED_FIELD;
+    }
+    if (!formData.maritalStatus || !formData.maritalStatus.trim()) {
+      newErrors.maritalStatus = ERRORS.REQUIRED_FIELD;
+    }
+
+    // Validate marriage date if marital status is married
+    if (formData.maritalStatus === MARITAL_STATUS.MARRIED) {
+      if (!formData.marriages[0]?.marriageDate || !formData.marriages[0].marriageDate.trim()) {
+        newErrors.marriageDate = 'Marriage date is required when marital status is married';
       }
-    });
+    }
+    if (!formData.dobAsPerDocument || !formData.dobAsPerDocument.trim()) {
+      newErrors.dobAsPerDocument = ERRORS.REQUIRED_FIELD;
+    }
+    if (!formData.role || !formData.role.trim()) {
+      newErrors.role = ERRORS.REQUIRED_FIELD;
+    } else if (formData.role === 'Member') {
+      // Member is the default role, so it's always valid
+      delete newErrors.role;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -437,27 +592,61 @@ const User: React.FC = () => {
     setSubmitMessage(null);
 
     try {
-      await userService.createUser(formData);
+      // Prepare the data for submission
+      const submissionData = {
+        ...formData,
+        // Clean up marriage data if not married
+        marriages: formData.maritalStatus === MARITAL_STATUS.MARRIED
+          ? formData.marriages.map(marriage => ({
+            ...marriage,
+            // Remove empty spouseId to avoid validation error
+            spouseId: marriage.spouseId || undefined,
+          }))
+          : []
+      };
+
+      await userService.createUser(submissionData);
       setSubmitMessage({ type: 'success', message: SUCCESS.CREATED });
       // Reset form after successful submission
       setFormData({
+        // Basic Information
         firstName: '',
         middleName: '',
         lastName: '',
         email: '',
-        phone: '',
+        phoneNumber: '',
         password: '',
+        dobAsPerDocument: '',
+
+        // Identity Documents
         pan: '',
         adhar: '',
-        maritalStatus: '',
-        dateOfBirth: '',
-        roles: '',
+
+        // Role and Status
+        role: ROLES.MEMBER, // Set Member as default role
+        maritalStatus: MARITAL_STATUS.SINGLE,
+
+        // Cultural Information
         kul: '',
         gotra: '',
-        fatherName: '',
-        motherName: '',
-        childrenName: '',
-        dateOfMarriage: '',
+
+        // Family Information
+        fatherDetails: {
+          fatherName: '',
+          relationshipType: 'biological',
+          isAlive: true,
+        },
+        motherDetails: {
+          motherName: '',
+          relationshipType: 'biological',
+          isAlive: true,
+        },
+
+        // Marriage Information
+        marriages: [],
+
+        // Children Information
+        children: [],
       });
       setErrors({});
       setValidationState({
@@ -465,19 +654,18 @@ const User: React.FC = () => {
         middleName: 'neutral',
         lastName: 'neutral',
         email: 'neutral',
-        phone: 'neutral',
+        phoneNumber: 'neutral',
         password: 'neutral',
         pan: 'neutral',
         adhar: 'neutral',
         maritalStatus: 'neutral',
-        dateOfBirth: 'neutral',
-        roles: 'neutral',
+        dobAsPerDocument: 'neutral',
+        role: 'valid', // Member is default, so it's valid
         kul: 'neutral',
         gotra: 'neutral',
         fatherName: 'neutral',
         motherName: 'neutral',
-        childrenName: 'neutral',
-        dateOfMarriage: 'neutral',
+        marriageDate: 'neutral',
       });
     } catch (error) {
       setSubmitMessage({ type: 'error', message: ERRORS.SERVER_ERROR });
@@ -488,23 +676,44 @@ const User: React.FC = () => {
 
   const handleReset = () => {
     setFormData({
+      // Basic Information
       firstName: '',
       middleName: '',
       lastName: '',
       email: '',
-      phone: '',
+      phoneNumber: '',
       password: '',
+      dobAsPerDocument: '',
+
+      // Identity Documents
       pan: '',
       adhar: '',
-      maritalStatus: '',
-      dateOfBirth: '',
-      roles: '',
+
+      // Role and Status
+      role: ROLES.MEMBER, // Set Member as default role
+      maritalStatus: MARITAL_STATUS.SINGLE,
+
+      // Cultural Information
       kul: '',
       gotra: '',
-      fatherName: '',
-      motherName: '',
-      childrenName: '',
-      dateOfMarriage: '',
+
+      // Family Information
+      fatherDetails: {
+        fatherName: '',
+        relationshipType: 'biological',
+        isAlive: true,
+      },
+      motherDetails: {
+        motherName: '',
+        relationshipType: 'biological',
+        isAlive: true,
+      },
+
+      // Marriage Information
+      marriages: [],
+
+      // Children Information
+      children: [],
     });
     setErrors({});
     setValidationState({
@@ -512,19 +721,18 @@ const User: React.FC = () => {
       middleName: 'neutral',
       lastName: 'neutral',
       email: 'neutral',
-      phone: 'neutral',
+      phoneNumber: 'neutral',
       password: 'neutral',
       pan: 'neutral',
       adhar: 'neutral',
       maritalStatus: 'neutral',
-      dateOfBirth: 'neutral',
-      roles: 'neutral',
+      dobAsPerDocument: 'neutral',
+      role: 'valid', // Member is default, so it's valid
       kul: 'neutral',
       gotra: 'neutral',
       fatherName: 'neutral',
       motherName: 'neutral',
-      childrenName: 'neutral',
-      dateOfMarriage: 'neutral',
+      marriageDate: 'neutral',
     });
     setSubmitMessage(null);
   };
@@ -558,8 +766,10 @@ const User: React.FC = () => {
               <label htmlFor="firstName" className="form-label">
                 {FORMS.FIRST_NAME} <span className="required">*</span>
               </label>
-              <div className="input-wrapper">
+              <div className="input-wrapper has-trailing-elements">
+                <UserOutlined className="input-icon" />
                 <input
+                  style={{ paddingLeft: '40px' }}
                   type="text"
                   id="firstName"
                   value={formData.firstName}
@@ -567,8 +777,10 @@ const User: React.FC = () => {
                   className={`form-input ${validationState.firstName}`}
                   placeholder="Enter first name"
                 />
-                {validationState.firstName === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
-                {validationState.firstName === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                <div className="trailing-elements">
+                  {validationState.firstName === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
+                  {validationState.firstName === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                </div>
               </div>
               {errors.firstName && <span className="error-message">{errors.firstName}</span>}
             </div>
@@ -577,22 +789,28 @@ const User: React.FC = () => {
               <label htmlFor="middleName" className="form-label">
                 {FORMS.MIDDLE_NAME}
               </label>
-              <input
-                type="text"
-                id="middleName"
-                value={formData.middleName}
-                onChange={(e) => handleInputChange('middleName', e.target.value)}
-                className="form-input"
-                placeholder="Enter middle name (optional)"
-              />
+              <div className="input-wrapper">
+                <UserOutlined className="input-icon" />
+                <input
+                  style={{ paddingLeft: '40px' }}
+                  type="text"
+                  id="middleName"
+                  value={formData.middleName}
+                  onChange={(e) => handleInputChange('middleName', e.target.value)}
+                  className="form-input"
+                  placeholder="Enter middle name (optional)"
+                />
+              </div>
             </div>
 
             <div className="form-group">
               <label htmlFor="lastName" className="form-label">
                 {FORMS.LAST_NAME} <span className="required">*</span>
               </label>
-              <div className="input-wrapper">
+              <div className="input-wrapper has-trailing-elements">
+                <UserOutlined className="input-icon" />
                 <input
+                  style={{ paddingLeft: '40px' }}
                   type="text"
                   id="lastName"
                   value={formData.lastName}
@@ -600,8 +818,10 @@ const User: React.FC = () => {
                   className={`form-input ${validationState.lastName}`}
                   placeholder="Enter last name"
                 />
-                {validationState.lastName === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
-                {validationState.lastName === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                <div className="trailing-elements">
+                  {validationState.lastName === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
+                  {validationState.lastName === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                </div>
               </div>
               {errors.lastName && <span className="error-message">{errors.lastName}</span>}
             </div>
@@ -610,9 +830,10 @@ const User: React.FC = () => {
               <label htmlFor="email" className="form-label">
                 {FORMS.EMAIL} <span className="required">*</span>
               </label>
-              <div className="input-wrapper">
-                {/* <MailOutlined className="input-icon" /> */}
+              <div className="input-wrapper has-trailing-elements">
+                <MailOutlined className="input-icon" />
                 <input
+                  style={{ paddingLeft: '40px' }}
                   type="email"
                   id="email"
                   value={formData.email}
@@ -620,8 +841,10 @@ const User: React.FC = () => {
                   className={`form-input ${validationState.email}`}
                   placeholder="Enter email address"
                 />
-                {validationState.email === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
-                {validationState.email === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                <div className="trailing-elements">
+                  {validationState.email === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
+                  {validationState.email === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                </div>
               </div>
               {errors.email && <span className="error-message">{errors.email}</span>}
             </div>
@@ -630,9 +853,10 @@ const User: React.FC = () => {
               <label htmlFor="password" className="form-label">
                 {FORMS.PASSWORD} <span className="required">*</span>
               </label>
-              <div className="input-wrapper password-input-wrapper">
-                {/* <LockOutlined className="input-icon" /> */}
+              <div className="input-wrapper password-input-wrapper has-trailing-elements">
+                <LockOutlined className="input-icon" />
                 <input
+                  style={{ paddingLeft: '40px' }}
                   type={showPassword ? 'text' : 'password'}
                   id="password"
                   value={formData.password}
@@ -640,38 +864,43 @@ const User: React.FC = () => {
                   className={`form-input ${validationState.password}`}
                   placeholder="Enter password"
                 />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeInvisibleOutlined /> : <EyeTwoTone />}
-                </button>
-                {validationState.password === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
-                {validationState.password === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                <div className="trailing-elements">
+                  {validationState.password === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
+                  {validationState.password === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeInvisibleOutlined /> : <EyeTwoTone />}
+                  </button>
+                </div>
               </div>
               {errors.password && <span className="error-message">{errors.password}</span>}
             </div>
 
             <div className="form-group">
-              <label htmlFor="phone" className="form-label">
+              <label htmlFor="phoneNumber" className="form-label">
                 {FORMS.PHONE} <span className="required">*</span>
               </label>
-              <div className="input-wrapper">
+              <div className="input-wrapper has-trailing-elements">
                 <PhoneOutlined className="input-icon" />
                 <input
-                  type="tel"
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className={`form-input ${validationState.phone}`}
-                  placeholder="Enter phone number"
+                  style={{ paddingLeft: '40px' }}
+                  type="number"
+                  id="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                  className={`form-input ${validationState.phoneNumber}`}
+                  placeholder="Enter Phone Number"
                   maxLength={10}
                 />
-                {validationState.phone === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
-                {validationState.phone === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                <div className="trailing-elements">
+                  {validationState.phoneNumber === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
+                  {validationState.phoneNumber === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                </div>
               </div>
-              {errors.phone && <span className="error-message">{errors.phone}</span>}
+              {errors.phoneNumber && <span className="error-message">{errors.phoneNumber}</span>}
             </div>
           </div>
         </div>
@@ -688,18 +917,22 @@ const User: React.FC = () => {
               <label htmlFor="pan" className="form-label">
                 {FORMS.PAN}
               </label>
-              <div className="input-wrapper">
+              <div className="input-wrapper has-trailing-elements">
+                <IdcardOutlined className="input-icon" />
                 <input
+                  style={{ paddingLeft: '40px' }}
                   type="text"
                   id="pan"
                   value={formData.pan}
                   onChange={(e) => handleInputChange('pan', e.target.value.toUpperCase())}
                   className={`form-input ${validationState.pan}`}
-                  placeholder="Enter PAN number"
+                  placeholder="Enter PAN Number"
                   maxLength={10}
                 />
-                {validationState.pan === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
-                {validationState.pan === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                <div className="trailing-elements">
+                  {validationState.pan === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
+                  {validationState.pan === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                </div>
               </div>
               {errors.pan && <span className="error-message">{errors.pan}</span>}
             </div>
@@ -708,18 +941,22 @@ const User: React.FC = () => {
               <label htmlFor="adhar" className="form-label">
                 {FORMS.ADHAR}
               </label>
-              <div className="input-wrapper">
+              <div className="input-wrapper has-trailing-elements">
+                <IdcardOutlined className="input-icon" />
                 <input
+                  style={{ paddingLeft: '40px' }}
                   type="text"
                   id="adhar"
                   value={formData.adhar}
                   onChange={(e) => handleInputChange('adhar', e.target.value.replace(/\D/g, ''))}
                   className={`form-input ${validationState.adhar}`}
-                  placeholder="Enter Aadhaar number"
+                  placeholder="Enter Aadhaar Number"
                   maxLength={12}
                 />
-                {validationState.adhar === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
-                {validationState.adhar === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                <div className="trailing-elements">
+                  {validationState.adhar === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
+                  {validationState.adhar === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                </div>
               </div>
               {errors.adhar && <span className="error-message">{errors.adhar}</span>}
             </div>
@@ -747,7 +984,9 @@ const User: React.FC = () => {
                 >
                   <option value="">Select marital status</option>
                   {Object.values(MARITAL_STATUS).map(status => (
-                    <option key={status} value={status}>{status}</option>
+                    <option key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </option>
                   ))}
                 </select>
                 <DownOutlined className="select-arrow" />
@@ -756,46 +995,252 @@ const User: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="dateOfBirth" className="form-label">
+              <label htmlFor="dobAsPerDocument" className="form-label">
                 {FORMS.DOB} <span className="required">*</span>
               </label>
-              <div className="input-wrapper">
+              <div className="input-wrapper has-trailing-elements">
                 <CalendarOutlined className="input-icon" />
                 <input
                   type="date"
-                  id="dateOfBirth"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                  className={`form-input ${validationState.dateOfBirth}`}
+                  id="dobAsPerDocument"
+                  value={formData.dobAsPerDocument}
+                  onChange={(e) => handleInputChange('dobAsPerDocument', e.target.value)}
+                  className={`form-input ${validationState.dobAsPerDocument}`}
                 />
-                {validationState.dateOfBirth === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
-                {validationState.dateOfBirth === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                <div className="trailing-elements">
+                  {validationState.dobAsPerDocument === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
+                  {validationState.dobAsPerDocument === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                </div>
               </div>
-              {errors.dateOfBirth && <span className="error-message">{errors.dateOfBirth}</span>}
+              {errors.dobAsPerDocument && <span className="error-message">{errors.dobAsPerDocument}</span>}
             </div>
 
-            {isMarried && (
+          </div>
+        </div>
+
+        {/* Marriage Information Section */}
+        {isMarried && (
+          <div className="form-section">
+            <h3 className="section-title">
+              <TeamOutlined />
+              Marriage Information
+            </h3>
+
+            <div className="form-grid">
               <div className="form-group">
-                <label htmlFor="dateOfMarriage" className="form-label">
-                  {FORMS.DATE_OF_MARRIAGE}
+                <label htmlFor="spouseName" className="form-label">
+                  Spouse Name
                 </label>
-                <div className="input-wrapper">
+                <div className="autocomplete-wrapper">
+                  <div className="input-wrapper">
+                    <UserOutlined className="input-icon" />
+                    <input
+                      type="text"
+                      id="spouseName"
+                      value={formData.marriages[0]?.spouseName || ''}
+                      onChange={(e) => {
+                        const updatedMarriages = [...formData.marriages];
+                        if (updatedMarriages.length === 0) {
+                          updatedMarriages.push({
+                            spouseName: e.target.value,
+                            spouseId: '',
+                            marriageDate: '',
+                            marriagePlace: { city: '', state: '', country: '' },
+                            marriageOrder: 1,
+                            marriageStatus: 'current',
+                            marriageType: 'arranged',
+                            isCurrentSpouse: true
+                          });
+                        } else {
+                          updatedMarriages[0].spouseName = e.target.value;
+                        }
+                        setFormData(prev => ({ ...prev, marriages: updatedMarriages }));
+                      }}
+                      className="form-input"
+                      placeholder="Enter Spouse Name"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="marriageDate" className="form-label">
+                  Marriage Date <span className="required">*</span>
+                </label>
+                <div className="input-wrapper has-trailing-elements">
                   <CalendarOutlined className="input-icon" />
                   <input
                     type="date"
-                    id="dateOfMarriage"
-                    value={formData.dateOfMarriage}
-                    onChange={(e) => handleInputChange('dateOfMarriage', e.target.value)}
-                    className={`form-input ${validationState.dateOfMarriage}`}
+                    id="marriageDate"
+                    value={formData.marriages[0]?.marriageDate || ''}
+                    onChange={(e) => {
+                      const updatedMarriages = [...formData.marriages];
+                      if (updatedMarriages.length === 0) {
+                        updatedMarriages.push({
+                          spouseName: '',
+                          spouseId: '',
+                          marriageDate: e.target.value,
+                          marriagePlace: { city: '', state: '', country: '' },
+                          marriageOrder: 1,
+                          marriageStatus: 'current',
+                          marriageType: 'arranged',
+                          isCurrentSpouse: true
+                        });
+                      } else {
+                        updatedMarriages[0].marriageDate = e.target.value;
+                      }
+                      setFormData(prev => ({ ...prev, marriages: updatedMarriages }));
+                    }}
+                    className="form-input"
+                    placeholder="Select Marriage Date"
+                    required
                   />
-                  {validationState.dateOfMarriage === 'valid' && <CheckCircleOutlined className="validation-icon valid" />}
-                  {validationState.dateOfMarriage === 'invalid' && <CloseCircleOutlined className="validation-icon invalid" />}
+                  <div className="trailing-elements">
+                    {formData.marriages[0]?.marriageDate && <CheckCircleOutlined className="validation-icon valid" />}
+                  </div>
                 </div>
-                {errors.dateOfMarriage && <span className="error-message">{errors.dateOfMarriage}</span>}
+                {errors.marriageDate && <span className="error-message">{errors.marriageDate}</span>}
               </div>
-            )}
+
+              <div className="form-group">
+                <label className="form-label">Marriage Type</label>
+                <div className="select-wrapper">
+                  <select
+                    value={formData.marriages[0]?.marriageType || 'arranged'}
+                    onChange={(e) => {
+                      const updatedMarriages = [...formData.marriages];
+                      if (updatedMarriages.length === 0) {
+                        updatedMarriages.push({
+                          spouseName: '',
+                          spouseId: '',
+                          marriageDate: '',
+                          marriagePlace: { city: '', state: '', country: '' },
+                          marriageOrder: 1,
+                          marriageStatus: 'current',
+                          marriageType: e.target.value,
+                          isCurrentSpouse: true
+                        });
+                      } else {
+                        updatedMarriages[0].marriageType = e.target.value;
+                      }
+                      setFormData(prev => ({ ...prev, marriages: updatedMarriages }));
+                    }}
+                    className="form-select"
+                  >
+                    <option value="arranged">Arranged</option>
+                    <option value="love">Love</option>
+                    <option value="inter_caste">Inter-caste</option>
+                    <option value="inter_religion">Inter-religion</option>
+                    <option value="remarriage">Remarriage</option>
+                  </select>
+                  <DownOutlined className="select-arrow" />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="marriageCity" className="form-label">
+                  Marriage City
+                </label>
+                <input
+                  type="text"
+                  id="marriageCity"
+                  value={formData.marriages[0]?.marriagePlace?.city || ''}
+                  onChange={(e) => {
+                    const updatedMarriages = [...formData.marriages];
+                    if (updatedMarriages.length === 0) {
+                      updatedMarriages.push({
+                        spouseName: '',
+                        spouseId: '',
+                        marriageDate: '',
+                        marriagePlace: { city: e.target.value, state: '', country: '' },
+                        marriageOrder: 1,
+                        marriageStatus: 'current',
+                        marriageType: 'arranged',
+                        isCurrentSpouse: true
+                      });
+                    } else {
+                      updatedMarriages[0].marriagePlace = {
+                        ...updatedMarriages[0].marriagePlace,
+                        city: e.target.value
+                      };
+                    }
+                    setFormData(prev => ({ ...prev, marriages: updatedMarriages }));
+                  }}
+                  className="form-input"
+                  placeholder="Enter Marriage City"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="marriageState" className="form-label">
+                  Marriage State
+                </label>
+                <input
+                  type="text"
+                  id="marriageState"
+                  value={formData.marriages[0]?.marriagePlace?.state || ''}
+                  onChange={(e) => {
+                    const updatedMarriages = [...formData.marriages];
+                    if (updatedMarriages.length === 0) {
+                      updatedMarriages.push({
+                        spouseName: '',
+                        spouseId: '',
+                        marriageDate: '',
+                        marriagePlace: { city: '', state: e.target.value, country: '' },
+                        marriageOrder: 1,
+                        marriageStatus: 'current',
+                        marriageType: 'arranged',
+                        isCurrentSpouse: true
+                      });
+                    } else {
+                      updatedMarriages[0].marriagePlace = {
+                        ...updatedMarriages[0].marriagePlace,
+                        state: e.target.value
+                      };
+                    }
+                    setFormData(prev => ({ ...prev, marriages: updatedMarriages }));
+                  }}
+                  className="form-input"
+                  placeholder="Enter Marriage State"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="marriageCountry" className="form-label">
+                  Marriage Country
+                </label>
+                <input
+                  type="text"
+                  id="marriageCountry"
+                  value={formData.marriages[0]?.marriagePlace?.country || ''}
+                  onChange={(e) => {
+                    const updatedMarriages = [...formData.marriages];
+                    if (updatedMarriages.length === 0) {
+                      updatedMarriages.push({
+                        spouseName: '',
+                        spouseId: '',
+                        marriageDate: '',
+                        marriagePlace: { city: '', state: '', country: e.target.value },
+                        marriageOrder: 1,
+                        marriageStatus: 'current',
+                        marriageType: 'arranged',
+                        isCurrentSpouse: true
+                      });
+                    } else {
+                      updatedMarriages[0].marriagePlace = {
+                        ...updatedMarriages[0].marriagePlace,
+                        country: e.target.value
+                      };
+                    }
+                    setFormData(prev => ({ ...prev, marriages: updatedMarriages }));
+                  }}
+                  className="form-input"
+                  placeholder="Enter Marriage Country"
+                />
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Community Information Section */}
         <div className="form-section">
@@ -806,24 +1251,26 @@ const User: React.FC = () => {
 
           <div className="form-grid">
             <div className="form-group">
-              <label htmlFor="roles" className="form-label">
+              <label htmlFor="role" className="form-label">
                 {FORMS.ROLE} <span className="required">*</span>
               </label>
               <div className="select-wrapper">
                 <select
-                  id="roles"
-                  value={formData.roles}
-                  onChange={(e) => handleInputChange('roles', e.target.value)}
-                  className={`form-select ${validationState.roles}`}
+                  id="role"
+                  value={formData.role}
+                  onChange={(e) => handleInputChange('role', e.target.value)}
+                  className={`form-select ${validationState.role}`}
                 >
                   <option value="">Select role</option>
                   {roles.map(role => (
-                    <option key={role.id} value={role.name}>{role.name}</option>
+                    <option key={role.id} value={role.name}>
+                      {role.name}
+                    </option>
                   ))}
                 </select>
                 <DownOutlined className="select-arrow" />
               </div>
-              {errors.roles && <span className="error-message">{errors.roles}</span>}
+              {errors.role && <span className="error-message">{errors.role}</span>}
             </div>
 
             <div className="form-group">
@@ -863,24 +1310,27 @@ const User: React.FC = () => {
             Family Information
           </h3>
 
+          {/* Father Details Row */}
           <div className="form-grid">
             <div className="form-group">
               <label htmlFor="fatherName" className="form-label">
                 {FORMS.FATHER_NAME}
               </label>
               <div className="autocomplete-wrapper">
-                <div className="input-wrapper">
+                <div className="input-wrapper has-trailing-elements">
                   <UserOutlined className="input-icon" />
                   <input
                     type="text"
                     id="fatherName"
-                    value={formData.fatherName}
+                    value={formData.fatherDetails.fatherName}
                     onChange={(e) => handleAutocompleteInputChange('fatherName', e.target.value)}
                     className="form-input"
                     placeholder="Search for father's name"
                     onFocus={() => setShowAutocomplete(prev => ({ ...prev, fatherName: true }))}
                   />
-                  {autocompleteLoading.fatherName && <LoadingOutlined className="loading-icon" />}
+                  <div className="trailing-elements">
+                    {autocompleteLoading.fatherName && <LoadingOutlined className="loading-icon" />}
+                  </div>
                 </div>
                 {showAutocomplete.fatherName && autocompleteOptions.length > 0 && (
                   <div className="autocomplete-dropdown">
@@ -899,22 +1349,83 @@ const User: React.FC = () => {
             </div>
 
             <div className="form-group">
+              <label className="form-label">Father's Relationship Type</label>
+              <div className="select-wrapper">
+                <select
+                  value={formData.fatherDetails.relationshipType}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    fatherDetails: { ...prev.fatherDetails, relationshipType: e.target.value }
+                  }))}
+                  className="form-select"
+                >
+                  <option value="biological">Biological</option>
+                  <option value="adoptive">Adoptive</option>
+                  <option value="step">Step</option>
+                  <option value="foster">Foster</option>
+                </select>
+                <DownOutlined className="select-arrow" />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Father's Status</label>
+              <div className="checkbox-wrapper">
+                <input
+                  type="checkbox"
+                  id="fatherAlive"
+                  checked={formData.fatherDetails.isAlive}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    fatherDetails: { ...prev.fatherDetails, isAlive: e.target.checked }
+                  }))}
+                  className="form-checkbox"
+                />
+                <label htmlFor="fatherAlive" className="checkbox-label">Alive</label>
+              </div>
+            </div>
+
+            {!formData.fatherDetails.isAlive && (
+              <div className="form-group">
+                <label htmlFor="fatherDeathDate" className="form-label">Date of Death</label>
+                <div className="input-wrapper">
+                  <CalendarOutlined className="input-icon" />
+                  <input
+                    type="date"
+                    id="fatherDeathDate"
+                    value={formData.fatherDetails.dateOfDeath || ''}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      fatherDetails: { ...prev.fatherDetails, dateOfDeath: e.target.value }
+                    }))}
+                    className="form-input"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Mother Details Row */}
+          <div className="form-grid">
+            <div className="form-group">
               <label htmlFor="motherName" className="form-label">
                 {FORMS.MOTHER_NAME}
               </label>
               <div className="autocomplete-wrapper">
-                <div className="input-wrapper">
+                <div className="input-wrapper has-trailing-elements">
                   <UserOutlined className="input-icon" />
                   <input
                     type="text"
                     id="motherName"
-                    value={formData.motherName}
+                    value={formData.motherDetails.motherName}
                     onChange={(e) => handleAutocompleteInputChange('motherName', e.target.value)}
                     className="form-input"
                     placeholder="Search for mother's name"
                     onFocus={() => setShowAutocomplete(prev => ({ ...prev, motherName: true }))}
                   />
-                  {autocompleteLoading.motherName && <LoadingOutlined className="loading-icon" />}
+                  <div className="trailing-elements">
+                    {autocompleteLoading.motherName && <LoadingOutlined className="loading-icon" />}
+                  </div>
                 </div>
                 {showAutocomplete.motherName && autocompleteOptions.length > 0 && (
                   <div className="autocomplete-dropdown">
@@ -932,41 +1443,179 @@ const User: React.FC = () => {
               </div>
             </div>
 
-            {isMarried && (
+            <div className="form-group">
+              <label className="form-label">Mother's Relationship Type</label>
+              <div className="select-wrapper">
+                <select
+                  value={formData.motherDetails.relationshipType}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    motherDetails: { ...prev.motherDetails, relationshipType: e.target.value }
+                  }))}
+                  className="form-select"
+                >
+                  <option value="biological">Biological</option>
+                  <option value="adoptive">Adoptive</option>
+                  <option value="step">Step</option>
+                  <option value="foster">Foster</option>
+                </select>
+                <DownOutlined className="select-arrow" />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Mother's Status</label>
+              <div className="checkbox-wrapper">
+                <input
+                  type="checkbox"
+                  id="motherAlive"
+                  checked={formData.motherDetails.isAlive}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    motherDetails: { ...prev.motherDetails, isAlive: e.target.checked }
+                  }))}
+                  className="form-checkbox"
+                />
+                <label htmlFor="motherAlive" className="checkbox-label">Alive</label>
+              </div>
+            </div>
+
+            {!formData.motherDetails.isAlive && (
               <div className="form-group">
-                <label htmlFor="childrenName" className="form-label">
-                  {FORMS.CHILDREN_NAME}
-                </label>
-                <div className="autocomplete-wrapper">
-                  <div className="input-wrapper">
-                    <UserOutlined className="input-icon" />
-                    <input
-                      type="text"
-                      id="childrenName"
-                      value={formData.childrenName}
-                      onChange={(e) => handleAutocompleteInputChange('childrenName', e.target.value)}
-                      className="form-input"
-                      placeholder="Search for children's name"
-                      onFocus={() => setShowAutocomplete(prev => ({ ...prev, childrenName: true }))}
-                    />
-                    {autocompleteLoading.childrenName && <LoadingOutlined className="loading-icon" />}
-                  </div>
-                  {showAutocomplete.childrenName && autocompleteOptions.length > 0 && (
-                    <div className="autocomplete-dropdown">
-                      {autocompleteOptions.map(option => (
-                        <div
-                          key={option.id}
-                          className="autocomplete-option"
-                          onClick={() => handleAutocompleteSelect('childrenName', option)}
-                        >
-                          {option.name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                <label htmlFor="motherDeathDate" className="form-label">Date of Death</label>
+                <div className="input-wrapper">
+                  <CalendarOutlined className="input-icon" />
+                  <input
+                    type="date"
+                    id="motherDeathDate"
+                    value={formData.motherDetails.dateOfDeath || ''}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      motherDetails: { ...prev.motherDetails, dateOfDeath: e.target.value }
+                    }))}
+                    className="form-input"
+                  />
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Children Information Section */}
+        <div className="form-section">
+          <h3 className="section-title">
+            <TeamOutlined />
+            Children Information
+          </h3>
+
+          <div className="children-management">
+            {formData.children.map((child, index) => (
+              <div key={index} className="child-entry">
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label className="form-label">Child Name</label>
+                    <input
+                      type="text"
+                      value={child.childName}
+                      onChange={(e) => {
+                        const updatedChildren = [...formData.children];
+                        updatedChildren[index].childName = e.target.value;
+                        setFormData(prev => ({ ...prev, children: updatedChildren }));
+                      }}
+                      className="form-input"
+                      placeholder="Enter child name"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Relationship Type</label>
+                    <div className="select-wrapper">
+                      <select
+                        value={child.relationshipType}
+                        onChange={(e) => {
+                          const updatedChildren = [...formData.children];
+                          updatedChildren[index].relationshipType = e.target.value;
+                          setFormData(prev => ({ ...prev, children: updatedChildren }));
+                        }}
+                        className="form-select"
+                      >
+                        <option value="biological">Biological</option>
+                        <option value="adopted">Adopted</option>
+                        <option value="step">Step</option>
+                        <option value="foster">Foster</option>
+                      </select>
+                      <DownOutlined className="select-arrow" />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Birth Date</label>
+                    <div className="input-wrapper">
+                      <CalendarOutlined className="input-icon" />
+                      <input
+                        type="date"
+                        value={child.birthDate || ''}
+                        onChange={(e) => {
+                          const updatedChildren = [...formData.children];
+                          updatedChildren[index].birthDate = e.target.value;
+                          setFormData(prev => ({ ...prev, children: updatedChildren }));
+                        }}
+                        className="form-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Other Parent Name</label>
+                    <input
+                      type="text"
+                      value={child.otherParentName || ''}
+                      onChange={(e) => {
+                        const updatedChildren = [...formData.children];
+                        updatedChildren[index].otherParentName = e.target.value;
+                        setFormData(prev => ({ ...prev, children: updatedChildren }));
+                      }}
+                      className="form-input"
+                      placeholder="Enter other parent name"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updatedChildren = formData.children.filter((_, i) => i !== index);
+                        setFormData(prev => ({ ...prev, children: updatedChildren }));
+                      }}
+                      className="btn btn-danger btn-sm"
+                    >
+                      Remove Child
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => {
+                const newChild = {
+                  childName: '',
+                  childId: '',
+                  relationshipType: 'biological',
+                  birthDate: '',
+                  fromWhichMarriage: 1,
+                  otherParentName: '',
+                  otherParentId: '',
+                  isActive: true
+                };
+                setFormData(prev => ({ ...prev, children: [...prev.children, newChild] }));
+              }}
+              className="btn btn-secondary"
+            >
+              <UserAddOutlined />
+              Add Child
+            </button>
           </div>
         </div>
 
@@ -982,7 +1631,7 @@ const User: React.FC = () => {
           </button>
           <button
             type="submit"
-            className="btn btn-primary"
+            className={`btn btn-primary ${isLoading ? 'loading' : ''}`}
             disabled={isLoading}
           >
             {isLoading ? (

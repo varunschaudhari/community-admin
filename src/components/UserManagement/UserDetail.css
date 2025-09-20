@@ -1,9 +1,17 @@
+/* User Detail Page Styles */
 .user-detail-page {
-    padding: 24px;
+    padding: 16px;
     background-color: #f5f5f5;
     min-height: 100vh;
+    transition: all 0.3s ease;
 }
 
+.user-detail-page.dark-theme {
+    background-color: #141414;
+    color: #ffffff;
+}
+
+/* Header Styles */
 .user-detail-header {
     display: flex;
     justify-content: space-between;
@@ -11,14 +19,21 @@
     margin-bottom: 24px;
     padding: 16px 24px;
     background: white;
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.user-detail-page.dark-theme .user-detail-header {
+    background: #1f1f1f;
+    border: 1px solid #303030;
 }
 
 .back-button {
     display: flex;
     align-items: center;
     gap: 8px;
+    font-weight: 500;
 }
 
 .header-actions {
@@ -26,73 +41,216 @@
     gap: 12px;
 }
 
-.user-profile-card {
-    height: 100%;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.edit-button {
+    background: #52c41a;
+    border-color: #52c41a;
+    font-weight: 500;
+}
+
+.edit-button:hover {
+    background: #73d13d;
+    border-color: #73d13d;
+}
+
+/* User Profile Header Card */
+.user-profile-header-card {
+    margin-bottom: 24px;
     border-radius: 12px;
-    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.user-detail-page.dark-theme .user-profile-header-card {
+    background: #1f1f1f;
+    border: 1px solid #303030;
 }
 
 .user-profile-header {
-    text-align: center;
-    padding: 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
 }
 
 .user-avatar {
-    /* margin-bottom: 16px; */
-    border: 0px solid #f0f0f0;
+    border: 3px solid #f0f0f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.user-profile-info h2 {
-    margin: 0 0 8px 0;
+.user-detail-page.dark-theme .user-avatar {
+    border-color: #303030;
+}
+
+.user-profile-info {
+    flex: 1;
+}
+
+.user-name {
+    margin: 0 0 6px 0;
     color: #262626;
-    font-size: 24px;
+    font-size: 16px;
     font-weight: 600;
-}
-
-.user-profile-info .username {
-    margin: 0 0 4px 0;
-    color: #8c8c8c;
-    font-size: 14px;
-}
-
-.user-profile-info .email {
-    margin: 0 0 12px 0;
-    color: #595959;
-    font-size: 14px;
-}
-
-.user-status {
     display: flex;
-    justify-content: center;
     align-items: center;
+    gap: 6px;
+}
+
+.user-detail-page.dark-theme .user-name {
+    color: #ffffff;
+}
+
+.user-email {
+    margin: 0 0 12px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.user-detail-page.dark-theme .user-email {
+    color: #bfbfbf;
+}
+
+.verified-icon {
+    color: #52c41a;
+    font-size: 20px;
+}
+
+.user-status-badges {
+    display: flex;
     gap: 12px;
-    padding: 16px 0;
+    flex-wrap: wrap;
 }
 
-.user-details-card {
+/* Info Cards */
+.info-card {
     height: 100%;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.user-detail-page.dark-theme .info-card {
+    background: #1f1f1f;
+    border: 1px solid #303030;
+}
+
+.user-detail-page.dark-theme .info-card .ant-card-head {
+    border-bottom: 1px solid #303030;
+}
+
+.user-detail-page.dark-theme .info-card .ant-card-head-title {
+    color: #ffffff;
+}
+
+.user-detail-page.dark-theme .info-card .ant-descriptions-item-label {
+    color: #bfbfbf;
+}
+
+.user-detail-page.dark-theme .info-card .ant-descriptions-item-content {
+    color: #ffffff;
+}
+
+/* Activity Card */
+.activity-card {
     border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
 }
 
-.edit-user-form {
-    padding: 16px 0;
+.user-detail-page.dark-theme .activity-card {
+    background: #1f1f1f;
+    border: 1px solid #303030;
 }
 
-.edit-user-form .ant-form-item {
-    margin-bottom: 20px;
+.user-detail-page.dark-theme .activity-card .ant-card-head-title {
+    color: #ffffff;
 }
 
-.edit-user-form .ant-form-item-label {
-    font-weight: 500;
-    color: #262626;
+.user-detail-page.dark-theme .activity-card .ant-timeline-item-content {
+    color: #ffffff;
 }
 
 .timeline-date {
-    color: #8c8c8c;
+    color: #999;
     font-size: 12px;
     margin-top: 4px;
+}
+
+.user-detail-page.dark-theme .timeline-date {
+    color: #bfbfbf;
+}
+
+/* Security Items */
+.security-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: #fafafa;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.user-detail-page.dark-theme .security-item {
+    background: #262626;
+}
+
+.security-icon {
+    font-size: 18px;
+    color: #1890ff;
+}
+
+.security-content h4 {
+    margin: 0 0 2px 0;
+    color: #262626;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.user-detail-page.dark-theme .security-content h4 {
+    color: #ffffff;
+}
+
+.security-content p {
+    margin: 0;
+    color: #666;
+    font-size: 10px;
+}
+
+.user-detail-page.dark-theme .security-content p {
+    color: #bfbfbf;
+}
+
+/* Form Styles */
+.edit-user-form .ant-form-item-label>label {
+    color: #262626;
+    font-weight: 500;
+}
+
+.user-detail-page.dark-theme .edit-user-form .ant-form-item-label>label {
+    color: #ffffff;
+}
+
+.user-detail-page.dark-theme .edit-user-form .ant-input {
+    background: #262626;
+    border-color: #303030;
+    color: #ffffff;
+}
+
+.user-detail-page.dark-theme .edit-user-form .ant-input:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.user-detail-page.dark-theme .edit-user-form .ant-select-selector {
+    background: #262626;
+    border-color: #303030;
+    color: #ffffff;
+}
+
+.user-detail-page.dark-theme .edit-user-form .ant-picker {
+    background: #262626;
+    border-color: #303030;
+    color: #ffffff;
 }
 
 /* Responsive Design */
@@ -101,6 +259,27 @@
         padding: 16px;
     }
 
+    .user-profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+
+    .user-name {
+        font-size: 24px;
+    }
+
+    .user-status-badges {
+        justify-content: center;
+    }
+
+    .security-item {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 576px) {
     .user-detail-header {
         flex-direction: column;
         gap: 16px;
@@ -111,205 +290,133 @@
         justify-content: center;
     }
 
-    .user-profile-header {
-        padding: 16px 0;
-    }
-
-    .user-profile-info h2 {
+    .user-name {
         font-size: 20px;
     }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    .user-detail-page {
-        background-color: #141414;
-    }
-
-    .user-detail-header {
-        background: #1f1f1f;
-        border: 1px solid #303030;
-    }
-
-    .user-profile-card,
-    .user-details-card {
-        background: #1f1f1f;
-        border: 1px solid #303030;
-    }
-
-    .user-profile-info h2 {
-        color: #ffffff;
-    }
-
-    .user-profile-info .username,
-    .user-profile-info .email {
-        color: #a6a6a6;
-    }
-
-    .timeline-date {
-        color: #a6a6a6;
-    }
+/* Dark Theme Overrides */
+.user-detail-page.dark-theme .ant-card {
+    background: #1f1f1f;
+    border-color: #303030;
 }
 
-/* Animation Effects */
-.user-profile-card,
-.user-details-card {
-    transition: all 0.3s ease;
+.user-detail-page.dark-theme .ant-card-head {
+    border-bottom-color: #303030;
 }
 
-.user-profile-card:hover,
-.user-details-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+.user-detail-page.dark-theme .ant-card-head-title {
+    color: #ffffff;
 }
 
-.back-button {
-    transition: all 0.2s ease;
+.user-detail-page.dark-theme .ant-descriptions-item-label {
+    color: #bfbfbf;
 }
 
-.back-button:hover {
-    transform: translateX(-2px);
+.user-detail-page.dark-theme .ant-descriptions-item-content {
+    color: #ffffff;
 }
 
-/* Form Styling */
+.user-detail-page.dark-theme .ant-tag {
+    border-color: #303030;
+}
+
+.user-detail-page.dark-theme .ant-badge-status-text {
+    color: #ffffff;
+}
+
+.user-detail-page.dark-theme .ant-timeline-item-content {
+    color: #ffffff;
+}
+
+.user-detail-page.dark-theme .ant-timeline-item-head {
+    background: #1f1f1f;
+    border-color: #303030;
+}
+
+/* Button Styles */
+.user-detail-page.dark-theme .ant-btn {
+    border-color: #303030;
+}
+
+.user-detail-page.dark-theme .ant-btn-primary {
+    background: #1890ff;
+    border-color: #1890ff;
+}
+
+.user-detail-page.dark-theme .ant-btn-primary:hover {
+    background: #40a9ff;
+    border-color: #40a9ff;
+}
+
+/* Modal Styles */
+.user-detail-page.dark-theme .ant-modal-content {
+    background: #1f1f1f;
+}
+
+.user-detail-page.dark-theme .ant-modal-header {
+    background: #1f1f1f;
+    border-bottom-color: #303030;
+}
+
+.user-detail-page.dark-theme .ant-modal-title {
+    color: #ffffff;
+}
+
+.user-detail-page.dark-theme .ant-modal-body {
+    color: #ffffff;
+}
+
+.user-detail-page.dark-theme .ant-modal-footer {
+    border-top-color: #303030;
+}
+
+/* Alert Styles */
+.user-detail-page.dark-theme .ant-alert {
+    background: #1f1f1f;
+    border-color: #303030;
+}
+
+.user-detail-page.dark-theme .ant-alert-message {
+    color: #ffffff;
+}
+
+.user-detail-page.dark-theme .ant-alert-description {
+    color: #bfbfbf;
+}
+
+/* Compact Form Styles */
+.edit-user-form .ant-form-item-label>label {
+    font-size: 12px;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
 .edit-user-form .ant-input,
-.edit-user-form .ant-select-selector {
-    border-radius: 6px;
+.edit-user-form .ant-select-selector,
+.edit-user-form .ant-picker {
+    font-size: 12px;
+    height: 32px;
+    border-radius: 4px;
     border: 1px solid #d9d9d9;
-    transition: all 0.3s ease;
 }
 
 .edit-user-form .ant-input:focus,
-.edit-user-form .ant-select-focused .ant-select-selector {
+.edit-user-form .ant-select-focused .ant-select-selector,
+.edit-user-form .ant-picker-focused {
     border-color: #1890ff;
     box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
 }
 
-.edit-user-form .ant-switch {
-    background-color: #d9d9d9;
+.edit-user-form .ant-input::placeholder {
+    font-size: 11px;
+    color: #bfbfbf;
 }
 
-.edit-user-form .ant-switch-checked {
-    background-color: #1890ff;
+.edit-user-form .ant-checkbox-wrapper {
+    font-size: 12px;
 }
 
-/* Button Styling */
-.header-actions .ant-btn {
-    border-radius: 6px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.header-actions .ant-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-/* Statistics Cards */
-.ant-statistic-title {
+.user-detail-page.dark-theme .edit-user-form .ant-input::placeholder {
     color: #8c8c8c;
-    font-size: 14px;
-    margin-bottom: 8px;
-}
-
-.ant-statistic-content {
-    font-size: 24px;
-    font-weight: 600;
-}
-
-/* Timeline Styling */
-.ant-timeline-item-content {
-    color: #262626;
-}
-
-.ant-timeline-item-head {
-    border-color: #1890ff;
-}
-
-/* Modal Styling */
-.ant-modal-content {
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.ant-modal-header {
-    background: #fafafa;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.ant-modal-title {
-    font-weight: 600;
-    color: #262626;
-}
-
-/* Alert Styling */
-.ant-alert {
-    border-radius: 8px;
-    border: none;
-}
-
-.ant-alert-warning {
-    background-color: #fff7e6;
-    color: #d46b08;
-}
-
-/* Descriptions Styling */
-.ant-descriptions-bordered .ant-descriptions-item-label {
-    background-color: #fafafa;
-    font-weight: 500;
-    color: #262626;
-}
-
-.ant-descriptions-bordered .ant-descriptions-item-content {
-    background-color: #ffffff;
-}
-
-/* Tag Styling */
-.ant-tag {
-    border-radius: 4px;
-    font-weight: 500;
-    padding: 2px 8px;
-}
-
-/* Badge Styling */
-.ant-badge-status-text {
-    font-weight: 500;
-    margin-left: 8px;
-}
-
-/* Loading States */
-.ant-btn-loading {
-    pointer-events: none;
-}
-
-.ant-btn-loading .ant-btn-loading-icon {
-    margin-right: 8px;
-}
-
-/* Focus States for Accessibility */
-.ant-btn:focus,
-.ant-input:focus,
-.ant-select:focus {
-    outline: 2px solid #1890ff;
-    outline-offset: 2px;
-}
-
-/* Print Styles */
-@media print {
-
-    .user-detail-header,
-    .header-actions {
-        display: none;
-    }
-
-    .user-detail-page {
-        background: white;
-        padding: 0;
-    }
-
-    .user-profile-card,
-    .user-details-card {
-        box-shadow: none;
-        border: 1px solid #d9d9d9;
-    }
 }

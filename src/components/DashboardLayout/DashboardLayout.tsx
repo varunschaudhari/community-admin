@@ -22,6 +22,7 @@ import {
   UsergroupAddOutlined,
   SafetyCertificateOutlined,
   UserSwitchOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
 import './DashboardLayout.css';
 
@@ -131,6 +132,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage
       active: currentPage === 'documents'
     },
     {
+      key: 'events',
+      label: 'Events',
+      icon: <CalendarOutlined />,
+      active: currentPage === 'events'
+    },
+    {
       key: 'user',
       label: NAVIGATION.USERS,
       icon: <UsergroupAddOutlined />,
@@ -153,6 +160,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage
       label: 'Roles',
       icon: <SafetyCertificateOutlined />,
       active: currentPage === 'roles'
+    },
+    {
+      key: 'user-profile',
+      label: 'My Profile',
+      icon: <UserOutlined />,
+      active: currentPage === 'user-profile'
+    },
+    {
+      key: 'family-tree',
+      label: 'Family Tree',
+      icon: <TeamOutlined />,
+      active: currentPage === 'family-tree'
     },
     {
       key: 'settings',

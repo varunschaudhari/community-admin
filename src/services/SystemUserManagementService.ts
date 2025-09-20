@@ -214,9 +214,17 @@ class SystemUserManagementService {
 
     // Delete system user
     async deleteSystemUser(id: string): Promise<{ success: boolean; message: string }> {
-        return this.makeRequest<{ success: boolean; message: string }>(`/users/${id}`, {
-            method: 'DELETE',
-        });
+        console.log(`Attempting to delete system user with ID: ${id}`);
+        try {
+            const result = await this.makeRequest<{ success: boolean; message: string }>(`/users/${id}`, {
+                method: 'DELETE',
+            });
+            console.log('Delete system user result:', result);
+            return result;
+        } catch (error) {
+            console.error('Delete system user error:', error);
+            throw error;
+        }
     }
 
     // Get system users by department

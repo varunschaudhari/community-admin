@@ -1,16 +1,38 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
   SaveOutlined,
-  CloseOutlined,
-  ExclamationCircleOutlined
+  UserOutlined,
+  SearchOutlined,
+  ReloadOutlined,
+  SettingOutlined
 } from '@ant-design/icons';
-import { Modal, Button, Switch, Checkbox, Input, message, Popconfirm, Tooltip } from 'antd';
-import { ROLES, FORMS, ERRORS, SUCCESS, ACTIONS } from '../../constants/strings';
+import {
+  Modal,
+  Button,
+  Switch,
+  Checkbox,
+  Input,
+  message,
+  Popconfirm,
+  Tooltip,
+  Tabs,
+  Table,
+  Tag,
+  Select,
+  Space,
+  Row,
+  Col,
+  Statistic,
+  Card
+} from 'antd';
+import { ERRORS, SUCCESS } from '../../constants/strings';
 import { roleService } from '../../services/RoleService';
+import { userManagementService, User } from '../../services/UserManagementService';
 import './Roles.css';
 
 interface Permission {
@@ -37,7 +59,16 @@ interface CreateRoleData {
   permissions: string[];
 }
 
+const { Option } = Select;
+const { Search } = Input;
+
+interface RoleStats {
+  [key: string]: number;
+}
+
 const Roles: React.FC = () => {
+  const { theme, isDark } = useTheme();
+  // Role management state
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -49,12 +80,14 @@ const Roles: React.FC = () => {
     description: '',
     permissions: []
   });
+
+  // User management state
+  const [users, setUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('');
+  const [roleStats, setRoleStats] = useState<RoleStats>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Calculate total statistics
-  const totalUsers = roles.reduce((sum, role) => sum + (role.memberCount || 0), 0);
-  const rolesWithUsers = roles.filter(role => (role.memberCount || 0) > 0).length;
-  const rolesWithoutUsers = roles.filter(role => (role.memberCount || 0) === 0).length;
 
   // Available permissions
   const availablePermissions: Permission[] = [
@@ -82,6 +115,7 @@ const Roles: React.FC = () => {
 
   useEffect(() => {
     fetchRoles();
+    fetchUsers();
   }, []);
 
   const fetchRoles = async () => {
@@ -200,6 +234,50 @@ const Roles: React.FC = () => {
     setSelectedRole(null);
   };
 
+  // User management functions
+  const fetchUsers = async () => {
+    try {
+      const response = await userManagementService.getAllUsers();
+      setUsers(response.data || []);
+      calculateRoleStats(response.data || []);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+      message.error('Failed to fetch users');
+    }
+  };
+
+  const calculateRoleStats = (userList: User[]) => {
+    const stats: RoleStats = {};
+    userList.forEach(user => {
+      const roleName = typeof user.role === 'object' && user.role?.name ? user.role.name : 'No Role';
+      stats[roleName] = (stats[roleName] || 0) + 1;
+    });
+    setRoleStats(stats);
+  };
+
+  const handleUserRoleChange = async (userId: string, newRoleId: string) => {
+    try {
+      await userManagementService.updateUserRole(userId, newRoleId);
+      message.success('User role updated successfully');
+      fetchUsers();
+    } catch (error) {
+      console.error('Failed to update user role:', error);
+      message.error('Failed to update user role');
+    }
+  };
+
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = !searchQuery ||
+      user.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const userRoleName = typeof user.role === 'object' && user.role?.name ? user.role.name : 'No Role';
+    const matchesRole = !roleFilter || userRoleName === roleFilter;
+
+    return matchesSearch && matchesRole;
+  });
+
   const openCreateModal = () => {
     resetForm();
     setCreateModalVisible(true);
@@ -277,6 +355,54 @@ const Roles: React.FC = () => {
     </div>
   );
 
+  // User table columns
+  const userColumns = [
+    {
+      title: 'Name',
+      dataIndex: 'firstName',
+      key: 'name',
+      render: (text: string, record: User) => `${record.firstName} ${record.lastName}`,
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+    },
+    {
+      title: 'Current Role',
+      dataIndex: 'role',
+      key: 'role',
+      render: (role: any) => {
+        const roleName = typeof role === 'object' && role?.name ? role.name : 'No Role';
+        return (
+          <Tag color={roleName === 'Super Admin' ? 'red' : roleName === 'Admin' ? 'blue' : 'green'}>
+            {roleName}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (text: string, record: User) => (
+        <Space>
+          <Select
+            value={typeof record.role === 'object' && record.role?._id ? record.role._id : ''}
+            style={{ width: 150 }}
+            onChange={(value) => handleUserRoleChange(record._id, value)}
+            placeholder="Select Role"
+          >
+            {roles.map(role => (
+              <Option key={role.id} value={role.id}>
+                {role.name}
+              </Option>
+            ))}
+          </Select>
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <div className="roles-page">
       <div className="roles-header">
@@ -284,132 +410,178 @@ const Roles: React.FC = () => {
           <h1 className="page-title">Role Management</h1>
           <p className="page-subtitle">Manage user roles and permissions for the community</p>
         </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={openCreateModal}
-          className="create-role-btn"
-        >
-          Create New Role
-        </Button>
       </div>
 
       <div className="roles-content">
-        {/* Statistics Section */}
-        <div className="roles-statistics">
-          <div className="stat-card">
-            <div className="stat-number">{roles.length}</div>
-            <div className="stat-label">Total Roles</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">{totalUsers}</div>
-            <div className="stat-label">Total Users</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">{rolesWithUsers}</div>
-            <div className="stat-label">Roles with Members</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">{rolesWithoutUsers}</div>
-            <div className="stat-label">Empty Roles</div>
-          </div>
-        </div>
-
-        <div className="roles-table-container">
-          <div className="table-header">
-            <h3>Available Roles</h3>
-            <span className="role-count">{roles.length} roles</span>
-          </div>
-
-          <div className="roles-grid">
-            {roles.map(role => (
-              <div key={role.id} className="role-card">
-                <div className="role-header">
-                  <div className="role-info">
-                    <h4 className="role-name">{role.name}</h4>
-                    <p className="role-description">{role.description}</p>
-                  </div>
-                  <div className="role-status">
-                    <Switch
-                      checked={role.isActive}
-                      size="small"
-                      disabled
-                    />
-                    <span className="status-label">{role.isActive ? 'Active' : 'Inactive'}</span>
-                  </div>
-                </div>
-
-                <div className="role-permissions">
-                  <h5>Permissions ({role.permissions.length})</h5>
-                  {renderPermissionsList(role.permissions.slice(0, 3))}
-                  {role.permissions.length > 3 && (
-                    <div className="more-permissions">
-                      +{role.permissions.length - 3} more permissions
-                    </div>
-                  )}
-                </div>
-
-                <div className="role-footer">
-                  <div className="role-meta">
-                    <span className="member-count">
-                      {role.memberCount || 0} members
-                    </span>
-                    <span className="last-updated">
-                      Updated {new Date(role.updatedAt).toLocaleDateString()}
-                    </span>
-                  </div>
-
-                  <div className="role-actions">
-                    <Tooltip title="View Details">
-                      <Button
-                        type="text"
-                        icon={<EyeOutlined />}
-                        onClick={() => openViewModal(role)}
-                        className="action-btn"
-                      />
-                    </Tooltip>
-                    <Tooltip title="Edit Role">
-                      <Button
-                        type="text"
-                        icon={<EditOutlined />}
-                        onClick={() => openEditModal(role)}
-                        className="action-btn"
-                      />
-                    </Tooltip>
-                    <Popconfirm
-                      title="Delete Role"
-                      description="Are you sure you want to delete this role? This action cannot be undone."
-                      onConfirm={() => handleDeleteRole(role.id)}
-                      okText="Yes, Delete"
-                      cancelText="Cancel"
-                      icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
-                    >
-                      <Tooltip title="Delete Role">
-                        <Button
-                          type="text"
-                          icon={<DeleteOutlined />}
-                          className="action-btn delete-btn"
-                        />
-                      </Tooltip>
-                    </Popconfirm>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {roles.length === 0 && !loading && (
-            <div className="empty-state">
-              <div className="empty-icon">👥</div>
-              <h3>No Roles Found</h3>
-              <p>Create your first role to get started with permission management.</p>
-              <Button type="primary" onClick={openCreateModal}>
-                Create First Role
+        <Tabs defaultActiveKey="roles" type="card">
+          {/* Role Management Tab */}
+          <Tabs.TabPane tab={<span><SettingOutlined />Role Management</span>} key="roles">
+            <div className="tab-header">
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={openCreateModal}
+                className="create-role-btn"
+              >
+                Create New Role
               </Button>
             </div>
-          )}
-        </div>
+
+            {/* Statistics Section */}
+            <Row gutter={16} style={{ marginBottom: 24 }}>
+              <Col span={6}>
+                <Card>
+                  <Statistic title="Total Roles" value={roles.length} />
+                </Card>
+              </Col>
+              <Col span={6}>
+                <Card>
+                  <Statistic title="Total Users" value={users.length} />
+                </Card>
+              </Col>
+              <Col span={6}>
+                <Card>
+                  <Statistic title="Active Roles" value={roles.filter(r => r.isActive).length} />
+                </Card>
+              </Col>
+              <Col span={6}>
+                <Card>
+                  <Statistic title="Roles with Members" value={Object.keys(roleStats).length} />
+                </Card>
+              </Col>
+            </Row>
+
+            {/* Roles Table */}
+            <Card title="Available Roles" extra={<span>{roles.length} roles</span>}>
+              <Table
+                dataSource={roles}
+                rowKey="id"
+                loading={loading}
+                pagination={{ pageSize: 10 }}
+                columns={[
+                  {
+                    title: 'Role Name',
+                    dataIndex: 'name',
+                    key: 'name',
+                    render: (text: string) => <strong>{text}</strong>,
+                  },
+                  {
+                    title: 'Description',
+                    dataIndex: 'description',
+                    key: 'description',
+                  },
+                  {
+                    title: 'Members',
+                    dataIndex: 'memberCount',
+                    key: 'memberCount',
+                    render: (count: number) => count || 0,
+                  },
+                  {
+                    title: 'Status',
+                    dataIndex: 'isActive',
+                    key: 'isActive',
+                    render: (isActive: boolean) => (
+                      <Tag color={isActive ? 'green' : 'red'}>
+                        {isActive ? 'Active' : 'Inactive'}
+                      </Tag>
+                    ),
+                  },
+                  {
+                    title: 'Actions',
+                    key: 'actions',
+                    render: (text: string, record: Role) => (
+                      <Space>
+                        <Tooltip title="View Details">
+                          <Button
+                            type="text"
+                            icon={<EyeOutlined />}
+                            onClick={() => openViewModal(record)}
+                          />
+                        </Tooltip>
+                        <Tooltip title="Edit Role">
+                          <Button
+                            type="text"
+                            icon={<EditOutlined />}
+                            onClick={() => openEditModal(record)}
+                          />
+                        </Tooltip>
+                        <Popconfirm
+                          title="Are you sure you want to delete this role?"
+                          onConfirm={() => handleDeleteRole(record.id)}
+                          okText="Yes"
+                          cancelText="No"
+                        >
+                          <Tooltip title="Delete Role">
+                            <Button
+                              type="text"
+                              danger
+                              icon={<DeleteOutlined />}
+                            />
+                          </Tooltip>
+                        </Popconfirm>
+                      </Space>
+                    ),
+                  },
+                ]}
+              />
+            </Card>
+          </Tabs.TabPane>
+
+          {/* User Role Assignment Tab */}
+          <Tabs.TabPane tab={<span><UserOutlined />User Role Assignment</span>} key="users">
+            <div className="tab-header">
+              <Space>
+                <Search
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{ width: 300 }}
+                  prefix={<SearchOutlined />}
+                />
+                <Select
+                  placeholder="Filter by role"
+                  value={roleFilter}
+                  onChange={setRoleFilter}
+                  style={{ width: 200 }}
+                  allowClear
+                >
+                  {roles.map(role => (
+                    <Option key={role.id} value={role.name}>
+                      {role.name}
+                    </Option>
+                  ))}
+                </Select>
+                <Button icon={<ReloadOutlined />} onClick={fetchUsers}>
+                  Refresh
+                </Button>
+              </Space>
+            </div>
+
+            {/* User Statistics */}
+            <Row gutter={16} style={{ marginBottom: 24 }}>
+              {Object.entries(roleStats).map(([roleName, count]) => (
+                <Col span={6} key={roleName}>
+                  <Card>
+                    <Statistic title={roleName} value={count} />
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+
+            {/* Users Table */}
+            <Card title="User Role Assignment" extra={<span>{filteredUsers.length} users</span>}>
+              <Table
+                dataSource={filteredUsers}
+                rowKey="_id"
+                loading={loading}
+                pagination={{ pageSize: 10 }}
+                columns={userColumns}
+              />
+            </Card>
+          </Tabs.TabPane>
+        </Tabs>
       </div>
+
 
       {/* Create Role Modal */}
       <Modal

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
     systemUserManagementService,
     SystemUser,
@@ -19,6 +20,7 @@ interface SystemUserManagementProps {
 }
 
 const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ className = '' }) => {
+    const { theme, isDark } = useTheme();
     const [systemUsers, setSystemUsers] = useState<SystemUser[]>([]);
     const [stats, setStats] = useState<SystemUserStatsType | null>(null);
     const [loading, setLoading] = useState(true);
@@ -159,11 +161,15 @@ const SystemUserManagement: React.FC<SystemUserManagementProps> = ({ className =
     // Handle user deletion
     const handleDeleteUser = async (userId: string) => {
         try {
+            setError(null); // Clear any previous errors
             await systemUserManagementService.deleteSystemUser(userId);
             loadSystemUsers();
             loadStats();
+            // You could add a success message here if you have a success state
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to delete user');
+            console.error('Delete user error:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Failed to delete user';
+            setError(errorMessage);
         }
     };
 

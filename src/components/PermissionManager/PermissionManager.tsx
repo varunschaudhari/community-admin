@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
 import { permissionService, UserPermissions } from '../../services/PermissionService';
 
 interface PermissionManagerProps {
@@ -6,6 +7,7 @@ interface PermissionManagerProps {
 }
 
 const PermissionManager: React.FC<PermissionManagerProps> = ({ isVisible = false }) => {
+    const { theme, isDark } = useTheme();
     const [roles, setRoles] = useState<any[]>([]);
     const [selectedRole, setSelectedRole] = useState<string>('');
     const [permissions, setPermissions] = useState<string[]>([]);

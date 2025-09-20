@@ -130,6 +130,49 @@ class ApiService {
         const response = await fetch('http://localhost:5000/health');
         return this.handleResponse<{ success: boolean; message: string }>(response);
     }
+
+    // Generic HTTP methods
+    async get<T>(url: string): Promise<{ data: T }> {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        });
+
+        const data = await this.handleResponse<T>(response);
+        return { data };
+    }
+
+    async post<T>(url: string, body?: any): Promise<{ data: T }> {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
+            method: 'POST',
+            headers: this.getAuthHeaders(),
+            body: body ? JSON.stringify(body) : undefined,
+        });
+
+        const data = await this.handleResponse<T>(response);
+        return { data };
+    }
+
+    async put<T>(url: string, body?: any): Promise<{ data: T }> {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
+            method: 'PUT',
+            headers: this.getAuthHeaders(),
+            body: body ? JSON.stringify(body) : undefined,
+        });
+
+        const data = await this.handleResponse<T>(response);
+        return { data };
+    }
+
+    async delete<T>(url: string): Promise<{ data: T }> {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
+            method: 'DELETE',
+            headers: this.getAuthHeaders(),
+        });
+
+        const data = await this.handleResponse<T>(response);
+        return { data };
+    }
 }
 
 export const apiService = new ApiService();

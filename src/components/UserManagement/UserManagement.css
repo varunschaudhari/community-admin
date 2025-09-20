@@ -2,6 +2,12 @@
     padding: 24px;
     background: #f5f5f5;
     min-height: 100vh;
+    transition: all 0.3s ease;
+}
+
+.user-management-page.dark-theme {
+    background: #141414;
+    color: #ffffff;
 }
 
 /* Page Header */
@@ -14,6 +20,12 @@
     padding: 24px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.user-management-page.dark-theme .page-header {
+    background: #1f1f1f;
+    border: 1px solid #303030;
 }
 
 .header-content .page-title {
@@ -21,12 +33,22 @@
     font-size: 28px;
     font-weight: 600;
     color: #1a1a1a;
+    transition: all 0.3s ease;
+}
+
+.user-management-page.dark-theme .header-content .page-title {
+    color: #ffffff;
 }
 
 .header-content .page-subtitle {
     margin: 0;
     color: #666;
     font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.user-management-page.dark-theme .header-content .page-subtitle {
+    color: #bfbfbf;
 }
 
 .header-actions {
@@ -129,17 +151,17 @@
 
 .user-name {
     font-weight: 500;
-    color: #1a1a1a;
+    color: var(--color-text-primary, #1a1a1a);
     margin-bottom: 2px;
 }
 
 .user-username {
     font-size: 12px;
-    color: #666;
+    color: var(--color-text-secondary, #666);
 }
 
 .email-text {
-    color: #1890ff;
+    color: var(--color-primary, #1890ff);
     font-size: 13px;
 }
 
@@ -175,12 +197,12 @@
     margin: 0 0 4px 0;
     font-size: 18px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--color-text-primary, #1a1a1a);
 }
 
 .user-header .user-info p {
     margin: 0 0 2px 0;
-    color: #666;
+    color: var(--color-text-secondary, #666);
     font-size: 14px;
 }
 
@@ -199,7 +221,7 @@
 
 .detail-row .label {
     font-weight: 500;
-    color: #1a1a1a;
+    color: var(--color-text-primary, #1a1a1a);
 }
 
 /* Edit User Form */
@@ -215,7 +237,7 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: #1a1a1a;
+    color: var(--color-text-primary, #1a1a1a);
 }
 
 .form-group .ant-select {
@@ -379,4 +401,166 @@
 .ant-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark Theme Overrides */
+.user-management-page.dark-theme .ant-card {
+    background: #1f1f1f;
+    border-color: #303030;
+}
+
+.user-management-page.dark-theme .ant-card-head {
+    border-bottom-color: #303030;
+}
+
+.user-management-page.dark-theme .ant-card-head-title {
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-table {
+    background: #1f1f1f;
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-table-thead>tr>th {
+    background: #262626;
+    border-bottom-color: #303030;
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-table-tbody>tr>td {
+    background: #1f1f1f;
+    border-bottom-color: #303030;
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-table-tbody>tr:hover>td {
+    background: #262626;
+}
+
+.user-management-page.dark-theme .ant-input {
+    background: #262626;
+    border-color: #303030;
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-input:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.user-management-page.dark-theme .ant-select-selector {
+    background: #262626;
+    border-color: #303030;
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-select-selection-item {
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-btn {
+    border-color: #303030;
+}
+
+.user-management-page.dark-theme .ant-btn-primary {
+    background: #1890ff;
+    border-color: #1890ff;
+}
+
+.user-management-page.dark-theme .ant-btn-primary:hover {
+    background: #40a9ff;
+    border-color: #40a9ff;
+}
+
+.user-management-page.dark-theme .ant-tag {
+    border-color: #303030;
+}
+
+.user-management-page.dark-theme .ant-badge-status-text {
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-statistic-title {
+    color: #bfbfbf;
+}
+
+.user-management-page.dark-theme .ant-statistic-content {
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-pagination {
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-pagination-item {
+    background: #262626;
+    border-color: #303030;
+}
+
+.user-management-page.dark-theme .ant-pagination-item a {
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-pagination-item-active {
+    background: #1890ff;
+    border-color: #1890ff;
+}
+
+.user-management-page.dark-theme .ant-pagination-item-active a {
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-pagination-prev,
+.user-management-page.dark-theme .ant-pagination-next {
+    background: #262626;
+    border-color: #303030;
+}
+
+.user-management-page.dark-theme .ant-pagination-prev a,
+.user-management-page.dark-theme .ant-pagination-next a {
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-modal-content {
+    background: #1f1f1f;
+}
+
+.user-management-page.dark-theme .ant-modal-header {
+    background: #1f1f1f;
+    border-bottom-color: #303030;
+}
+
+.user-management-page.dark-theme .ant-modal-title {
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-modal-body {
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-modal-footer {
+    border-top-color: #303030;
+}
+
+.user-management-page.dark-theme .ant-dropdown-menu {
+    background: #1f1f1f;
+    border-color: #303030;
+}
+
+.user-management-page.dark-theme .ant-dropdown-menu-item {
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-dropdown-menu-item:hover {
+    background: #262626;
+}
+
+.user-management-page.dark-theme .ant-tooltip-inner {
+    background: #1f1f1f;
+    color: #ffffff;
+}
+
+.user-management-page.dark-theme .ant-tooltip-arrow::before {
+    background: #1f1f1f;
 }

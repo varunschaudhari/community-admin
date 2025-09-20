@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
     Table,
     Input,
@@ -55,6 +56,7 @@ interface Role {
 }
 
 const UserManagement: React.FC = () => {
+    const { theme, isDark } = useTheme();
     const [users, setUsers] = useState<User[]>([]);
     const [roles, setRoles] = useState<Role[]>([]);
     const [stats, setStats] = useState<UserStats | null>(null);
@@ -157,9 +159,9 @@ const UserManagement: React.FC = () => {
         setEditModalVisible(true);
     };
 
-    const handleUpdateUserRole = async (userId: string, roleId: string) => {
+    const handleUpdateUserRole = async (userId: string, role: string) => {
         try {
-            await userManagementService.updateUserRole(userId, roleId);
+            await userManagementService.updateUserRole(userId, role);
             message.success('User role updated successfully');
             fetchUsers();
             fetchStats();
@@ -269,11 +271,14 @@ const UserManagement: React.FC = () => {
         {
             title: 'Role',
             key: 'role',
-            render: (user: User) => (
-                <Tag color={getRoleColor(user.role)}>
-                    {user.role}
-                </Tag>
-            ),
+            render: (user: User) => {
+                const roleName = typeof user.role === 'string' ? user.role : user.role.name;
+                return (
+                    <Tag color={getRoleColor(roleName)}>
+                        {roleName}
+                    </Tag>
+                );
+            },
             width: 120
         },
         {
@@ -369,7 +374,7 @@ const UserManagement: React.FC = () => {
     }
 
     return (
-        <div className="user-management-page">
+        <div className={`user-management-page ${isDark ? 'dark-theme' : ''}`}>
             <div className="page-header">
                 <div className="header-content">
                     <h1 className="page-title">User Management</h1>

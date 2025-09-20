@@ -46,6 +46,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     
     // Update document body class for additional styling
     document.body.classList.toggle('dark-theme', isDark);
+    
+    // Update document data-theme attribute for CSS custom properties
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
   const value = {

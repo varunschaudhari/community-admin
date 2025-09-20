@@ -36,11 +36,11 @@ export const ROLES = {
 
 // Marital Status Options
 export const MARITAL_STATUS = {
-  SINGLE: 'Single',
-  MARRIED: 'Married',
-  DIVORCED: 'Divorced',
-  WIDOWED: 'Widowed',
-  SEPARATED: 'Separated',
+  SINGLE: 'single',
+  MARRIED: 'married',
+  DIVORCED: 'divorced',
+  WIDOWED: 'widowed',
+  SEPARATED: 'separated',
 } as const;
 
 // Dashboard Sections
